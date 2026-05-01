@@ -83,7 +83,7 @@ public async Task<IActionResult> Index(string searchString)
             var success = await _answerService.DeleteAsync(id, currentUserId, true); 
             
             if (success) TempData["Success"] = "Đã xóa câu trả lời vi phạm khỏi hệ thống.";
-            
+            else TempData["Error"] = "Có lỗi xảy ra khi xóa câu trả lời.";
             return Redirect(Request.Headers["Referer"].ToString()); // Quay lại trang chi tiết câu hỏi sau khi xóa
         }
     }

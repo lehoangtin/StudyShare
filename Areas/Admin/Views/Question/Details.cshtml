@@ -3,7 +3,7 @@
     ViewData["Title"] = "Chi tiết thảo luận";
 }
 
-<div class="container-fluid py-4" style="background-color: #f8f9fc; min-height: 100vh;">
+<div class="container-fluid py-4"  min-height: 100vh;">
     <div class="row g-4">
         <div class="col-xl-3 col-lg-4 d-none d-lg-block">
             <div class="sticky-top" style="top: 20px;">
@@ -24,11 +24,11 @@
                 </form>
             </div>
 
-            @if (TempData["Success"] != null) {
+            @* @if (TempData["Success"] != null) {
                 <div class="alert alert-success border-0 shadow-sm rounded-4 px-4 py-3 mb-4 animate__animated animate__fadeIn">
                     <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
                 </div>
-            }
+            } *@
 
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-primary p-4 text-white d-flex align-items-center" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
