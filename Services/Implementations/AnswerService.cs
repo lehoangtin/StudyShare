@@ -10,11 +10,15 @@ namespace StudyShare.Services.Implementations
     public class AnswerService : IAnswerService
     {
         private readonly IAnswerRepository _answerRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
 
-        public AnswerService(IAnswerRepository answerRepository, IMapper mapper)
+        public AnswerService(IAnswerRepository answerRepository, IUserService userService, IUserRepository userRepository, IMapper mapper)
         {
             _answerRepository = answerRepository;
+            _userService = userService;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
 
@@ -27,13 +31,27 @@ namespace StudyShare.Services.Implementations
             return await _answerRepository.CreateAsync(answer);
         }
 
-        public async Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin)
+        // Xóa các hàm DeleteByUserAsync và DeleteByAdminAsync cũ đi và thay bằng hàm này:
+
+        public async Task<bool> DeleteAsync(int answerId, string currentUserId, bool isAdmin)
         {
-            var answer = await _answerRepository.GetByIdAsync(id);
-            if (answer == null) return false;
+            // 1. Lấy thông tin câu trả lời
+            var answer = await _answerRepository.GetByIdAsync(answerId);
+            if (answer == null)
+            {
+                return false;
+            }
 
-            if (!isAdmin && answer.UserId != currentUserId) return false;
+            // 2. Kiểm tra quyền: Chỉ Admin hoặc chính người trả lời mới được xóa
+            if (!isAdmin && answer.UserId != currentUserId)
+            {
+                return false; // Trả về false nếu không có quyền
+            }
 
+            // 3. Xử lý nghiệp vụ: Trừ điểm người dùng (ví dụ trừ 3 điểm)
+            await _userService.AddPointsAsync(answer.UserId, -3);
+
+            // 4. Tiến hành xóa câu trả lời từ Database
             return await _answerRepository.DeleteAsync(answer);
         }
         public async Task<IEnumerable<AnswerResponse>> GetByQuestionIdAsync(int questionId)
@@ -41,10 +59,17 @@ namespace StudyShare.Services.Implementations
             var answers = await _answerRepository.GetByQuestionIdAsync(questionId);
             return _mapper.Map<IEnumerable<AnswerResponse>>(answers);
         }
-        public async Task<bool> DeleteByAdminAsync(int id)
+        public async Task<bool> DeleteByAdminAsync(int answerId)
         {
-            var answer = await _answerRepository.GetByIdAsync(id);
-            if (answer == null) return false;
+            // 1. Lấy thông tin câu trả lời
+            var answer = await _answerRepository.GetByIdAsync(answerId);
+            if (answer == null) 
+            {
+                return false;
+            }
+
+            // 2. Tiến hành xóa câu trả lời
+            // (Toàn bộ logic trừ điểm user đã bị gỡ bỏ để nhường cho hàm Penalize xử lý)
             return await _answerRepository.DeleteAsync(answer);
         }
     }

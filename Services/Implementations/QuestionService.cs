@@ -12,17 +12,19 @@ namespace StudyShare.Services.Implementations
     {
         private readonly IQuestionRepository _questionRepository;
         private readonly IAnswerRepository _answerRepository; // Add AnswerRepository for admin delete answer function
+        private readonly IUserRepository _userRepository; // Add UserRepository for admin delete answer function
         private readonly IUserService _userService;
         private readonly IAIService _aiService;
         private readonly IReportService _reportService;
         private readonly IMapper _mapper;
 
-        public QuestionService(IQuestionRepository questionRepository, IAnswerRepository answerRepository, IMapper mapper,IUserService userService,       // Inject UserService
+        public QuestionService(IQuestionRepository questionRepository, IAnswerRepository answerRepository, IUserRepository userRepository, IMapper mapper,IUserService userService,       // Inject UserService
             IAIService aiService,           // Inject AIService
             IReportService reportService)
         {
             _questionRepository = questionRepository;
             _answerRepository = answerRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
             _userService = userService;
             _aiService = aiService;
@@ -89,15 +91,29 @@ public async Task<bool> CreateAsync(QuestionCreateRequest request, string userId
             return await _questionRepository.UpdateAsync(question);
         }
 
-        public async Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin)
+        // Xóa các hàm DeleteByUserAsync và DeleteByAdminAsync cũ đi và thay bằng hàm này:
+
+        public async Task<bool> DeleteAsync(int questionId, string currentUserId, bool isAdmin)
         {
-            var question = await _questionRepository.GetForEditAsync(id);
-            if (question == null) return false;
+            // 1. Lấy thông tin câu hỏi
+            var question = await _questionRepository.GetByIdAsync(questionId);
+            if (question == null)
+            {
+                return false;
+            }
 
-            if (!isAdmin && question.UserId != currentUserId) return false;
+            // 2. Kiểm tra quyền: Chỉ Admin hoặc người đặt câu hỏi mới được xóa
+            if (!isAdmin && question.UserId != currentUserId)
+            {
+                return false; 
+            }
 
+            // 3. (Tùy chọn) Xử lý nghiệp vụ điểm số ở đây nếu có
+            await _userService.AddPointsAsync(question.UserId, -5);
+
+            // 4. Tiến hành xóa câu hỏi
             return await _questionRepository.DeleteAsync(question);
-        }// Thêm các hàm này vào trong class QuestionService
+        }
 
         public async Task<IEnumerable<Question>> GetAllForAdminAsync()
         {
@@ -118,5 +134,16 @@ public async Task<bool> CreateAsync(QuestionCreateRequest request, string userId
         {
             return await _questionRepository.GetUserQuestionsAsync(userId);
         }
+        public async Task<bool> DeleteByAdminAsync(int questionId)
+{
+    // 1. Lấy thông tin câu hỏi để biết ai là người đăng
+    var question = await _questionRepository.GetByIdAsync(questionId);
+    if (question == null) 
+    {
+        return false;
+    }
+    // 2. Tiến hành xóa câu hỏi
+    return await _questionRepository.DeleteAsync(question); // Hoặc .DeleteAsync(questionId) tùy vào Repo của bạn
+}
     }
 }

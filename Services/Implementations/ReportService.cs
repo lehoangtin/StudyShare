@@ -15,6 +15,11 @@ namespace StudyShare.Services.Implementations
             _reportRepository = reportRepository;
             _mapper = mapper;
         }
+        public async Task<Report> GetByIdAsync(int reportId)
+        {
+            // Lấy nguyên bản ghi Report từ Database lên
+            return await _reportRepository.GetByIdAsync(reportId);
+        }
 
         public async Task<IEnumerable<ReportResponse>> GetReportsForUserAsync(string userId)
         {

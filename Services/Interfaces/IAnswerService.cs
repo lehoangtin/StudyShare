@@ -9,6 +9,6 @@ namespace StudyShare.Services.Interfaces
         Task<bool> CreateAsync(AnswerCreateRequest request, string userId);
         Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin);
         Task<IEnumerable<AnswerResponse>> GetByQuestionIdAsync(int questionId);
-
+        Task<bool> DeleteByAdminAsync(int answerId);
     }
 }

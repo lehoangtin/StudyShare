@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudyShare.Services.Interfaces;
 using StudyShare.ViewModels;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace StudyShare.Areas.Admin.Controllers
@@ -63,10 +64,18 @@ public async Task<IActionResult> Index(string searchString)
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _documentService.DeleteByAdminAsync(id);
-            if (success) TempData["Success"] = "Đã xóa tài liệu khỏi hệ thống.";
-            else TempData["Error"] = "Không thể xóa tài liệu này.";
-            
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = true; // Mặc định là true vì đang ở Area Admin
+
+            var success = await _documentService.DeleteAsync(id, currentUserId, isAdmin);
+
+            if (!success)
+            {
+                TempData["Error"] = "Xóa tài liệu thất bại!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Xóa tài liệu thành công. Đã trừ điểm người đăng bài!";
             return RedirectToAction(nameof(Index));
         }
     }

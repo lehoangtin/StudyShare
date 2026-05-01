@@ -18,16 +18,18 @@ namespace StudyShare.Services.Implementations
     {
         private readonly AppDbContext _context;
         private readonly IDocumentRepository _documentRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DocumentService(IDocumentRepository documentRepository, IUserService userService, IMapper mapper, IWebHostEnvironment webHostEnvironment, AppDbContext context)
+        public DocumentService(IDocumentRepository documentRepository, IUserService userService, IMapper mapper, IWebHostEnvironment webHostEnvironment, AppDbContext context, IUserRepository userRepository)
         {
             _documentRepository = documentRepository;
             _userService = userService;
             _mapper = mapper;
             _webHostEnvironment = webHostEnvironment;
+            _userRepository = userRepository;
             _context = context;
         }
 
@@ -124,29 +126,41 @@ namespace StudyShare.Services.Implementations
             return await _documentRepository.CreateAsync(document);
         }
 
-        public async Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin)
-        {
-            var doc = await _documentRepository.GetForEditAsync(id);
-            if (doc == null) return false;
-            if (!isAdmin && doc.UserId != currentUserId) return false;
+        // Trong DocumentService.cs
+// Trong DocumentService.cs
+public async Task<bool> DeleteAsync(int documentId, string currentUserId, bool isAdmin)
+{
+    // 1. Lấy thông tin tài liệu trước khi xóa
+    var document = await _documentRepository.GetByIdAsync(documentId);
+    if (document == null) 
+    {
+        return false;
+    }
 
-            // Lưu đường dẫn file trước khi xóa trong DB
-            var filePath = doc.FilePath; 
+    // 2. Kiểm tra quyền: Chỉ Admin hoặc chính tác giả mới được xóa
+    if (!isAdmin && document.UserId != currentUserId)
+    {
+        return false;
+    }
 
-            var result = await _documentRepository.DeleteAsync(doc);
-            if (result)
-            {
-                // Chỉ xóa file vật lý sau khi DB đã xóa thành công
-                var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('/'));
-                if (System.IO.File.Exists(physicalPath))
-                {
-                    System.IO.File.Delete(physicalPath);
-                }
-            }
-            return result;
-        }
+    // 3. XỬ LÝ TRỪ ĐIỂM CỰC KỲ QUAN TRỌNG
+    // Chỉ trừ điểm (thu hồi điểm) NẾU tài liệu NÀY ĐÃ ĐƯỢC ADMIN DUYỆT
+    if (document.IsApproved)
+    {
+        // Thu hồi lại đúng số điểm đã cộng lúc duyệt (Ví dụ lúc duyệt cộng 50 thì giờ trừ 50)
+        await _userService.AddPointsAsync(document.UserId, -10);
+    }
+    var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, document.FilePath.TrimStart('/'));
+    if (System.IO.File.Exists(physicalPath))
+    {
+        System.IO.File.Delete(physicalPath);
+    }
+    // Nếu document.IsApproved == false (tài liệu đang chờ duyệt), 
+    // user chưa nhận được điểm nào nên ta KHÔNG TRỪ GÌ CẢ.
 
-        public async Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search)
+    // 4. Tiến hành xóa tài liệu
+    return await _documentRepository.DeleteAsync(document);
+}        public async Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search)
         {
             var docs = await _documentRepository.GetAllForAdminAsync(search);
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
@@ -159,19 +173,35 @@ namespace StudyShare.Services.Implementations
 
         public async Task<bool> ApproveDocumentAsync(int id)
         {
-            var doc = await _documentRepository.GetByIdAsync(id);
-            if (doc == null || doc.IsApproved) return false;
-
-            // 1. Phê duyệt tài liệu
-            var success = await _documentRepository.ApproveDocumentAsync(doc);
-            
-            if (success)
+            try
             {
-                // 2. Cộng điểm thưởng cho người đăng (ví dụ: 50 điểm)
-                await _userService.AddPointsAsync(doc.UserId, 50);
-            }
+                var doc = await _documentRepository.GetByIdAsync(id);
+                
+                // 1. Nếu không tìm thấy tài liệu
+                if (doc == null) return false;
 
-            return success;
+                // 2. Nếu đã duyệt rồi thì coi như thành công (tránh báo lỗi khó hiểu cho Admin)
+                if (doc.IsApproved) return true;
+
+                // 3. Đổi trạng thái và cập nhật qua hàm UpdateAsync chung
+                doc.IsApproved = true;
+                var success = await _documentRepository.UpdateAsync(doc);
+                
+                if (success)
+                {
+                    // 4. Cộng điểm thưởng
+                    // (Nếu hàm này lỗi, nó sẽ nhảy xuống catch và không làm crash app)
+                    await _userService.AddPointsAsync(doc.UserId, 10);
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                // 5. Bạn có thể log lại ex.Message ở đây hoặc đặt Breakpoint để xem lỗi thực sự là gì
+                Console.WriteLine($"Lỗi khi duyệt tài liệu: {ex.Message}");
+                return false;
+            }
         }
         public async Task<bool> IncreaseDownloadCountAsync(int id)
         {
@@ -188,13 +218,6 @@ namespace StudyShare.Services.Implementations
             return _mapper.Map<IEnumerable<DocumentResponse>>(docs);
         }
 
-        public async Task<bool> DeleteByUserAsync(int id, string userId)
-        {
-            var doc = await _documentRepository.GetForEditAsync(id);
-            if (doc == null || doc.UserId != userId) return false;
-
-            return await _documentRepository.DeleteByUserAsync(doc);
-        }
         
         public async Task<IEnumerable<DocumentResponse>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId)
         {
@@ -206,14 +229,6 @@ namespace StudyShare.Services.Implementations
         {
             var document = await _documentRepository.GetDocumentDetailsAsync(id);
             return document == null ? null : _mapper.Map<DocumentResponse>(document);
-        }
-        
-        public async Task<bool> DeleteByAdminAsync(int id) 
-        {
-            var item = await _documentRepository.GetByIdAsync(id); 
-            if (item == null) return false;
-            await _documentRepository.DeleteAsync(item);
-            return true;
         }
         
         public async Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync()

@@ -79,7 +79,7 @@ namespace StudyShare.Areas.User.Controllers
             
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _documentService.CreateAsync(request, currentUserId);
-            await _userService.AddPointsAsync(currentUserId, 10);
+            // await _userService.AddPointsAsync(currentUserId, 10);
             
             TempData["Success"] = "Tải lên thành công! Tài liệu đang chờ duyệt.";
             return RedirectToAction(nameof(Index));
@@ -132,19 +132,18 @@ namespace StudyShare.Areas.User.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            bool isAdmin = User.IsInRole("Admin");
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin"); // Check quyền Admin (Nếu project của bạn dùng role khác như "SuperAdmin" thì nhớ đổi lại)
 
             var success = await _documentService.DeleteAsync(id, currentUserId, isAdmin);
-            if (success)
+
+            if (!success)
             {
-                TempData["Success"] = "Xóa tài liệu thành công!";
+                TempData["Error"] = "Xóa thất bại! Bạn không có quyền xóa tài liệu này hoặc tài liệu không tồn tại.";
+                return RedirectToAction(nameof(Index));
             }
-            else
-            {
-                TempData["Error"] = "Không thể xóa tài liệu. Bạn không có quyền hoặc tài liệu không tồn tại.";
-            }
-            
+
+            TempData["Success"] = "Xóa tài liệu thành công. Điểm của bạn đã được cập nhật!";
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]

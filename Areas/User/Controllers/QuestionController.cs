@@ -186,10 +186,17 @@ public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            bool isAdmin = User.IsInRole("Admin");
+           var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+            var success = await _questionService.DeleteAsync(id, currentUserId, isAdmin);
 
-            await _questionService.DeleteAsync(id, currentUserId, isAdmin);
+            if (!success)
+            {
+                TempData["Error"] = "Xóa thất bại! Bạn không có quyền xóa câu hỏi này.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Đã xóa câu hỏi thành công!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -240,28 +247,28 @@ public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
             return RedirectToAction(nameof(Details), new { id = request.QuestionId });
         }
         [HttpPost]
-[ValidateAntiForgeryToken]
-// Cần truyền vào 2 tham số: ID của câu trả lời muốn xóa, và ID của câu hỏi để quay về
-public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
-{
-    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-    bool isAdmin = User.IsInRole("Admin");
+        [ValidateAntiForgeryToken]
+        // Cần truyền vào 2 tham số: ID của câu trả lời muốn xóa, và ID của câu hỏi để quay về
+        public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
 
-    // Tận dụng hàm DeleteAsync trong AnswerService (nó đã tự check quyền chủ sở hữu hoặc Admin)
-    var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
-    
-    if (success)
-    {
-        TempData["Success"] = "Đã xóa câu trả lời thành công.";
-    }
-    else
-    {
-        TempData["Error"] = "Bạn không có quyền xóa câu trả lời này hoặc có lỗi xảy ra.";
-    }
+            // Gọi Service xử lý xóa và trừ điểm
+            var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
 
-    // Xóa xong thì chuyển hướng người dùng về lại đúng trang chi tiết của Câu hỏi đó
-    return RedirectToAction(nameof(Details), new { id = questionId });
-}
+            if (!success)
+            {
+                TempData["Error"] = "Xóa câu trả lời thất bại! Bạn không có quyền hoặc câu trả lời không tồn tại.";
+            }
+            else
+            {
+                TempData["Success"] = "Xóa câu trả lời thành công. Điểm của bạn đã được cập nhật!";
+            }
+
+            // Quay lại trang chi tiết của câu hỏi
+            return RedirectToAction(nameof(Details), new { id = questionId });
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]

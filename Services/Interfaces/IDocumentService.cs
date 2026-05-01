@@ -14,7 +14,6 @@ namespace StudyShare.Services.Interfaces
         Task<bool> UpdateAsync(DocumentUpdateRequest request, string currentUserId, bool isAdmin);
         Task<bool> CreateAsync(DocumentCreateRequest request, string userId);
         Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin);
-        Task<bool> DeleteByUserAsync(int id, string userId);
         Task<bool> IncreaseDownloadCountAsync(int id);
         Task<IEnumerable<DocumentResponse>> GetUserDocumentsAsync(string userId);
         Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search);
@@ -24,7 +23,6 @@ namespace StudyShare.Services.Interfaces
         Task<IEnumerable<DocumentResponse>> GetApprovedDocumentsAsync(string searchTerm, int? categoryId);
         Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync();
         Task<DocumentResponse?> GetDocumentDetailsAsync(int id);
-        Task<bool>DeleteByAdminAsync(int id);
         Task<IEnumerable<DocumentResponse>> GetPendingDocumentsAsync();
 
     }

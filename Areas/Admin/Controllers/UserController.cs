@@ -18,12 +18,16 @@ namespace StudyShare.Areas.Admin.Controllers
     {
         private readonly IUserService _userService;
         private readonly IReportService _reportService;
+        private readonly IQuestionService _questionService; // Bổ sung QuestionService
+        private readonly IAnswerService _answerService; // Bổ sung AnswerService
         private readonly IMapper _mapper;
 
-        public UserController(IUserService userService, IReportService reportService, IMapper mapper)
+        public UserController(IUserService userService, IReportService reportService, IQuestionService questionService, IAnswerService answerService, IDocumentService documentService, IMapper mapper)
         {
             _userService = userService;
             _reportService = reportService;
+            _questionService = questionService;
+            _answerService = answerService;
             _mapper = mapper;
         }
 
@@ -114,24 +118,41 @@ public async Task<IActionResult> Details(string id)
         }
 
         // Dùng hàm PenalizeUserAsync (Trừ 10 điểm, +1 gậy)
-       [HttpPost]
+[HttpPost]
 [ValidateAntiForgeryToken]
 public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
 {
-    if (string.IsNullOrEmpty(userId)) return NotFound("Không tìm thấy ID người dùng.");
+if (string.IsNullOrEmpty(userId)) return NotFound("Không tìm thấy ID người dùng.");
 
-    // GỌI ĐÚNG HÀM PHẠT: Sẽ tự động trừ điểm và TĂNG WarningCount lên 1
-    // Nếu WarningCount >= 3, hàm này cũng sẽ tự động khóa tài khoản luôn (như bạn đã viết ở UserService)
+    // 1. Lấy thông tin Report
+    var report = await _reportService.GetByIdAsync(reportId);
+    if (report == null) return NotFound("Không tìm thấy báo cáo.");
+
+    // 2. XÓA NỘI DUNG BỊ VI PHẠM (Chỉ xử lý Question và Answer)
+    bool isContentDeleted = false;
+    if (report.QuestionId.HasValue)
+    {
+        isContentDeleted = await _questionService.DeleteByAdminAsync(report.QuestionId.Value);
+    }
+    else if (report.AnswerId.HasValue)
+    {
+        isContentDeleted = await _answerService.DeleteByAdminAsync(report.AnswerId.Value);
+    }
+
+    // 3. PHẠT USER: Trừ điểm và Tăng 1 gậy (WarningCount)
     var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
     
     if (success)
     {
-        await _reportService.ResolveWithActionAsync(reportId, $"Admin đã xử phạt (Trừ {pointsDeducted} điểm).");
-        TempData["Success"] = "Đã xử phạt và ghi nhận 1 lần vi phạm thành công.";
+        // 4. Cập nhật trạng thái Report
+        string actionMessage = $"Admin đã xóa bài vi phạm, trừ {pointsDeducted} điểm và cảnh cáo.";
+        await _reportService.ResolveWithActionAsync(reportId, actionMessage);
+        
+        TempData["Success"] = "Đã xóa bài vi phạm, trừ điểm và ghi nhận 1 lần cảnh cáo thành công.";
     }
     else
     {
-        TempData["Error"] = "Có lỗi xảy ra khi xử phạt.";
+        TempData["Error"] = "Có lỗi xảy ra khi xử lý user.";
     }
     
     return RedirectToAction(nameof(PendingReports));

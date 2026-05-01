@@ -63,28 +63,41 @@ public async Task<IActionResult> Index(string searchString)
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-           // Lấy ID của Admin đang đăng nhập
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            
-            // Truyền đủ 3 tham số: id cần xóa, id người xóa, và cờ isAdmin = true
-            var success = await _questionService.DeleteAsync(id, currentUserId, true);
-            
-            if (success) TempData["Success"] = "Đã xóa toàn bộ câu hỏi.";
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = true; // Mặc định là true vì đang ở Area Admin
+
+            var success = await _questionService.DeleteAsync(id, currentUserId, isAdmin);
+
+            if (!success)
+            {
+                TempData["Error"] = "Xóa câu hỏi thất bại!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Đã xóa câu hỏi thành công!";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteAnswer(int id)
+        public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
         {
-            // Lấy ID của Admin đang đăng nhập
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            
-            // Truyền đủ 3 tham số: id cần xóa, id người xóa, và cờ isAdmin = true
-            var success = await _answerService.DeleteAsync(id, currentUserId, true); 
-            
-            if (success) TempData["Success"] = "Đã xóa câu trả lời vi phạm khỏi hệ thống.";
-            else TempData["Error"] = "Có lỗi xảy ra khi xóa câu trả lời.";
-            return Redirect(Request.Headers["Referer"].ToString()); // Quay lại trang chi tiết câu hỏi sau khi xóa
+           var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            bool isAdmin = true; // Mặc định là Admin do đang ở Area Admin
+
+            // Gọi Service xử lý xóa và trừ điểm (sử dụng answerId)
+            var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
+
+            if (!success)
+            {
+                TempData["Error"] = "Xóa câu trả lời thất bại!";
+            }
+            else
+            {
+                TempData["Success"] = "Đã xóa câu trả lời và trừ điểm người dùng vi phạm!";
+            }
+
+            // Quay lại trang chi tiết của câu hỏi để admin tiếp tục quản lý (sử dụng questionId)
+            return RedirectToAction(nameof(Details), new { id = questionId });
         }
     }
 }

@@ -183,8 +183,8 @@ namespace StudyShare.Areas.User.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            var success = await _documentService.DeleteByUserAsync(id, userId); 
+            // bool isAdmin = User.IsInRole("Admin");
+            var success = await _documentService.DeleteAsync(id, userId, false);  //
             if (success) TempData["Success"] = "Tài liệu của bạn đã được xóa vĩnh viễn.";
             else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
             
