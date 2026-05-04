@@ -55,7 +55,6 @@ namespace StudyShare.Areas.User.Controllers
     {
         searchString = searchString.ToLower();
         viewModels = viewModels.Where(q => 
-            (q.Title != null && q.Title.ToLower().Contains(searchString)) || 
             (q.Content != null && q.Content.ToLower().Contains(searchString))
         );
     }
