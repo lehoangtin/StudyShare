@@ -12,9 +12,7 @@ namespace StudyShare.Mappings
     {
         public MappingProfile()
         {
-            // ==========================================
             // 1. APP USER MAPPINGS (Đã gộp trùng lặp & fix lỗi)
-            // ==========================================
             CreateMap<AppUser, UserResponse>()
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
                 .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount))
@@ -35,9 +33,7 @@ namespace StudyShare.Mappings
             CreateMap<AppUser, UserEditViewModel>();
             CreateMap<UserEditViewModel, ProfileUpdateRequest>().ReverseMap();
             // Map từ Entity (AppUser) sang ViewModel để hiển thị
-            // ==========================================
             // 2. DOCUMENT MAPPINGS
-            // ==========================================
             CreateMap<DocumentCreateRequest, Document>();
             CreateMap<DocumentCreateViewModel, DocumentCreateRequest>();
             CreateMap<DocumentEditViewModel, DocumentUpdateRequest>().ReverseMap();
@@ -52,9 +48,7 @@ namespace StudyShare.Mappings
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : "Chưa phân loại"))
                 .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")); // THÊM DÒNG NÀY
-            // ==========================================
             // 3. QUESTION MAPPINGS
-            // ==========================================
             CreateMap<QuestionCreateRequest, Question>();
             CreateMap<QuestionCreateViewModel, QuestionCreateRequest>();
             CreateMap<QuestionEditViewModel, QuestionUpdateRequest>().ReverseMap();
@@ -68,9 +62,7 @@ namespace StudyShare.Mappings
             CreateMap<Question, QuestionViewModel>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0))
-                .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")); // THÊM DÒNG NÀY            // ==========================================
-            // 4. ANSWER MAPPINGS
-            // ==========================================
+                .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")); // THÊM DÒNG NÀY            // 4. ANSWER MAPPINGS
             CreateMap<AnswerCreateRequest, Answer>();
             CreateMap<AnswerCreateViewModel, AnswerCreateRequest>();
 
@@ -82,9 +74,7 @@ namespace StudyShare.Mappings
             CreateMap<Answer, AnswerViewModel>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
 
-            // ==========================================
             // 5. CATEGORY MAPPINGS
-            // ==========================================
             CreateMap<CategoryCreateRequest, Category>();
             CreateMap<CategoryCreateViewModel, CategoryCreateRequest>();
             CreateMap<CategoryEditViewModel, CategoryUpdateRequest>();
@@ -94,9 +84,7 @@ namespace StudyShare.Mappings
             CreateMap<CategoryResponse, CategoryViewModel>();
             CreateMap<Category, CategoryViewModel>(); 
 
-            // ==========================================
             // 6. REPORT MAPPINGS
-            // ==========================================
             CreateMap<Report, ReportResponse>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => 
                     src.Reporter != null ? src.Reporter.FullName : "Hệ thống (AI)"))

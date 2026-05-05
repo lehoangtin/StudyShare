@@ -5,14 +5,15 @@ using StudyShare.Services.Interfaces;
 using StudyShare.Services; 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using StudyShare.Models; // Thêm để dùng AppUser
+using StudyShare.Models; 
+
 namespace StudyShare.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IAuthService _authService;
         private readonly IEmailSender _emailSender;
-        private readonly SignInManager<AppUser> _signInManager; // Thêm SignInManager để xử lý đăng xuất
+        private readonly SignInManager<AppUser> _signInManager; 
 
         public AccountController(IAuthService authService, IEmailSender emailSender, SignInManager<AppUser> signInManager)
         {
@@ -35,9 +36,7 @@ namespace StudyShare.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                // 🔥 KIỂM TRA SỐ LẦN VI PHẠM TRƯỚC KHI ĐĂNG NHẬP
-                // Lưu ý: Nếu trong LoginViewModel của bạn dùng trường UserName thay vì Email để đăng nhập, 
-                // thì bạn đổi model.Email thành model.UserName nhé.
+                // KIỂM TRA SỐ LẦN VI PHẠM TRƯỚC KHI ĐĂNG NHẬP
                 var user = await _authService.GetUserByEmailAsync(model.Email); 
                 
                 if (user != null && user.WarningCount >= 3)
@@ -67,7 +66,8 @@ namespace StudyShare.Controllers
             }
             return View(model);
         }
-                [HttpGet]
+
+        [HttpGet]
         public IActionResult Register()
         {
             return View();
@@ -153,7 +153,18 @@ namespace StudyShare.Controllers
         [HttpGet]
         public IActionResult ResetPassword(string? code = null) 
         {
-            return code == null ? BadRequest("Cần có mã Token để đổi mật khẩu.") : View();
+            // ĐÃ SỬA: Truyền ViewModel chứa mã code sang View để tránh NullReferenceException
+            if (code == null)
+            {
+                return BadRequest("Cần có mã Token để đổi mật khẩu.");
+            }
+
+            var viewModel = new ResetPasswordViewModel
+            {
+                Token = code // Nếu trong ViewModel của bạn là chữ "Code" thì sửa lại thành Code = code
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -170,7 +181,8 @@ namespace StudyShare.Controllers
 
             foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
             
-            return View();
+            // ĐÃ SỬA: Trả về model để View không bị lỗi rỗng
+            return View(model);
         }
 
         [HttpGet]
