@@ -6,7 +6,8 @@ using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
 using StudyShare.ViewModels;
 using System.Security.Claims;
-
+using StudyShare.Models;
+using Microsoft.AspNetCore.Identity;
 namespace StudyShare.Areas.User.Controllers
 {
     [Area("User")]
@@ -14,14 +15,17 @@ namespace StudyShare.Areas.User.Controllers
     public class DocumentController : Controller
     {
         private readonly IDocumentService _documentService;
+        private readonly UserManager<AppUser> _userManager;
+
         private readonly IUserService _userService; // 🔥 Đã khai báo UserService
         private readonly ICategoryService _categoryService;
         private readonly IWebHostEnvironment _webHostEnvironment; // 🔥 Đã khai báo IWebHostEnvironment
         private readonly IMapper _mapper;
 
-        public DocumentController(IDocumentService documentService, IUserService userService, ICategoryService categoryService, IWebHostEnvironment webHostEnvironment, IMapper mapper)
+        public DocumentController(IDocumentService documentService, UserManager<AppUser> userManager, IUserService userService, ICategoryService categoryService, IWebHostEnvironment webHostEnvironment, IMapper mapper)
         {
             _documentService = documentService;
+            _userManager = userManager;
             _userService = userService;
             _categoryService = categoryService;
             _webHostEnvironment = webHostEnvironment;
@@ -197,5 +201,60 @@ namespace StudyShare.Areas.User.Controllers
             string fileType = !string.IsNullOrEmpty(document.FileType) ? document.FileType : "application/octet-stream";
             return File(fileBytes, fileType, document.FileName);
         }
+        [HttpGet]
+        public async Task<IActionResult> MyDocuments()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            var dtoList = await _documentService.GetUserDocumentsAsync(userId);
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+            
+            return View(viewModels);
+        }
+
+[HttpGet]
+public async Task<IActionResult> SavedDocuments()
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Unauthorized();
+    
+    ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+    
+    var savedDocsList = await _userService.GetSavedDocumentsAsync(userId);
+    var documents = savedDocsList.Select(s => s.Document).ToList();
+    var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documents);
+    
+    return View(viewModels);
+}
+
+// Bê luôn 2 hàm SaveDocument và UnsaveDocument từ UserController qua đây
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> SaveDocument(int docId)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var success = await _userService.SaveDocumentAsync(userId, docId);
+    if (success) TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
+    return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> UnsaveDocument(int docId)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var success = await _userService.UnsaveDocumentAsync(userId, docId);
+    if (success) TempData["Success"] = "Đã bỏ lưu tài liệu.";
+
+    string returnUrl = Request.Headers["Referer"].ToString();
+    if (returnUrl.Contains("SavedDocuments"))
+    {
+        return RedirectToAction(nameof(SavedDocuments));
+    }
+    return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+}
     }
 }

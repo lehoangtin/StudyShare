@@ -77,27 +77,5 @@ public async Task<IActionResult> Index(string searchString)
             TempData["Success"] = "Đã xóa câu hỏi thành công!";
             return RedirectToAction(nameof(Index));
         }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
-        {
-           var currentUserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-            bool isAdmin = true; // Mặc định là Admin do đang ở Area Admin
-
-            // Gọi Service xử lý xóa và trừ điểm (sử dụng answerId)
-            var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
-
-            if (!success)
-            {
-                TempData["Error"] = "Xóa câu trả lời thất bại!";
-            }
-            else
-            {
-                TempData["Success"] = "Đã xóa câu trả lời và trừ điểm người dùng vi phạm!";
-            }
-
-            // Quay lại trang chi tiết của câu hỏi để admin tiếp tục quản lý (sử dụng questionId)
-            return RedirectToAction(nameof(Details), new { id = questionId });
-        }
     }
 }

@@ -22,24 +22,45 @@ namespace StudyShare.Areas.Admin.Controllers
             _mapper = mapper;
         }
 
-public async Task<IActionResult> Index(string searchString)
+public async Task<IActionResult> Index(string searchString, string status = "all")
 {
-    ViewData["CurrentFilter"] = searchString; // Giữ lại từ khóa để hiện ở ô Search
+    // Đảm bảo status không bị null để tránh lỗi .ToLower()
+    status = string.IsNullOrEmpty(status) ? "all" : status;
+
+    ViewData["CurrentFilter"] = searchString;
+    ViewBag.CurrentStatus = status;
+
+    // Lấy dữ liệu từ Service (Đảm bảo Include User và Category để lấy Tên)
+    var documents = await _documentService.GetAllAsync(); 
     
-    var documents = await _documentService.GetAllAsync(); // Giả sử service lấy hết
+    // Ánh xạ sang ViewModel (Giả sử bạn dùng AutoMapper)
     var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documents);
 
+    // 1. Lọc theo từ khóa Tìm kiếm
     if (!string.IsNullOrEmpty(searchString))
     {
-        searchString = searchString.ToLower();
+        var lowerSearch = searchString.ToLower();
         viewModels = viewModels.Where(d => 
-            (d.AuthorEmail != null && d.AuthorEmail.ToLower().Contains(searchString)) ||
-            (d.AuthorName != null && d.AuthorName.ToLower().Contains(searchString)) ||
-            (d.Title != null && d.Title.ToLower().Contains(searchString))
-        ).ToList();
+            (d.Title != null && d.Title.ToLower().Contains(lowerSearch)) ||
+            (d.AuthorName != null && d.AuthorName.ToLower().Contains(lowerSearch))
+        );
     }
 
-    return View(viewModels);
+    // 2. Lọc theo Trạng thái (Dựa trên trường IsApproved mới thêm)
+    switch (status.ToLower())
+    {
+        case "pending":
+            viewModels = viewModels.Where(d => !d.IsApproved);
+            break;
+        case "approved":
+            viewModels = viewModels.Where(d => d.IsApproved);
+            break;
+    }
+
+    // Sắp xếp bài mới nhất lên đầu
+    viewModels = viewModels.OrderByDescending(d => d.Id);
+
+    return View(viewModels.ToList());
 }
 
         public async Task<IActionResult> Review(int id)
@@ -75,8 +96,9 @@ public async Task<IActionResult> Index(string searchString)
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = "Xóa tài liệu thành công. Đã trừ điểm người đăng bài!";
+            TempData["Success"] = "Xóa tài liệu thành công.";
             return RedirectToAction(nameof(Index));
         }
     }
+    
 }

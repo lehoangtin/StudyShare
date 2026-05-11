@@ -65,7 +65,8 @@ namespace StudyShare.Mappings
                 .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")); // THÊM DÒNG NÀY            // 4. ANSWER MAPPINGS
             CreateMap<AnswerCreateRequest, Answer>();
             CreateMap<AnswerCreateViewModel, AnswerCreateRequest>();
-
+            CreateMap<AnswerCreateViewModel, AnswerCreateRequest>();
+            CreateMap<AnswerEditViewModel, AnswerUpdateRequest>();
             CreateMap<Answer, AnswerResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
             
@@ -75,15 +76,20 @@ namespace StudyShare.Mappings
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
 
             // 5. CATEGORY MAPPINGS
-            CreateMap<CategoryCreateRequest, Category>();
+            // CREATE
             CreateMap<CategoryCreateViewModel, CategoryCreateRequest>();
-            CreateMap<CategoryEditViewModel, CategoryUpdateRequest>();
-            CreateMap<CategoryUpdateRequest, CategoryEditViewModel>(); 
-            CreateMap<Category, CategoryUpdateRequest>().ReverseMap();
-            CreateMap<Category, CategoryResponse>();
-            CreateMap<CategoryResponse, CategoryViewModel>();
-            CreateMap<Category, CategoryViewModel>(); 
+            CreateMap<CategoryCreateRequest, Category>();
 
+            // UPDATE
+            CreateMap<CategoryEditViewModel, CategoryUpdateRequest>().ReverseMap(); // Thêm ReverseMap ở đây
+            CreateMap<CategoryUpdateRequest, Category>().ReverseMap(); // Thêm ReverseMap ở đây
+
+            // RESPONSE
+            CreateMap<Category, CategoryResponse>();
+
+            // VIEWMODEL
+            CreateMap<CategoryResponse, CategoryViewModel>();
+            CreateMap<CategoryResponse, CategoryEditViewModel>();
             // 6. REPORT MAPPINGS
             CreateMap<Report, ReportResponse>()
                 .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => 

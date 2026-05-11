@@ -67,12 +67,12 @@ namespace StudyShare.Models
                 entity.HasOne(r => r.Question)
                     .WithMany() // Nếu Question.cs có ICollection<Report> thì thay bằng .WithMany(q => q.Reports)
                     .HasForeignKey(r => r.QuestionId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(r => r.Answer)
                     .WithMany() // Nếu Answer.cs có ICollection<Report> thì thay bằng .WithMany(a => a.Reports)
                     .HasForeignKey(r => r.AnswerId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.NoAction);
             });
         }
 

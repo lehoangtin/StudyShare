@@ -74,13 +74,16 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 builder.Services.AddTransient<EmailSender>();
 
 var app = builder.Build();
-
-// 🔥 Seeder (dùng bản mới của bạn)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
+        // --- THÊM 2 DÒNG NÀY ĐỂ TỰ ĐỘNG MIGRATION (TẠO DB) ---
+        var context = services.GetRequiredService<AppDbContext>();
+        await context.Database.MigrateAsync(); 
+        // -----------------------------------------------------
+
         await DataSeeder.SeedAllAsync(services);
     }
     catch (Exception ex)

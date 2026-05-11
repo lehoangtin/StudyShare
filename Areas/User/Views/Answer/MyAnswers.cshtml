@@ -1,0 +1,70 @@
+@model IEnumerable<StudyShare.DTOs.Responses.AnswerResponse>
+@{
+    ViewData["Title"] = "Câu trả lời của tôi";
+}
+
+<div class="container-fluid py-4" style="min-height: 100vh;">
+    <div class="row g-4">
+        <div class="col-xl-3 col-lg-4">
+            <div class="sticky-top" style="top: 20px;">
+                @await Html.PartialAsync("_UserSidebarPartial", (object)ViewBag.CurrentUser)
+            </div>
+        </div>
+
+        <div class="col-xl-9 col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-primary m-0">Lịch sử trả lời của bạn</h2>
+                <span class="badge bg-secondary px-3 py-2 fs-6 rounded-pill">Tổng số: @Model.Count()</span>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 shadow-sm rounded-4 bg-white border">
+                    <i class="bi bi-chat-dots display-1 text-muted"></i>
+                    <p class="mt-3 fs-5 text-muted">Bạn chưa để lại câu trả lời nào.</p>
+                    <a href="/User/Question/Index" class="btn btn-primary rounded-pill px-4">Khám phá các câu hỏi</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive shadow-sm rounded-4 overflow-hidden border">
+                    <table class="table table-hover align-middle mb-0 bg-white">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 40%" class="ps-4">Nội dung câu trả lời</th>
+                                <th style="width: 25%">Tại câu hỏi</th>
+                                <th style="width: 20%" class="text-center">Ngày đăng</th>
+                                <th style="width: 15%" class="text-center pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="text-dark fw-medium">@item.Content</div>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Question" asp-action="Details" asp-route-id="@item.QuestionId" class="badge bg-light text-primary text-decoration-none p-2 border">
+                                            <i class="bi bi-link-45deg"></i> Bài viết #@item.QuestionId
+                                        </a>
+                                    </td>
+                                    <td class="text-muted small text-center">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="text-center pe-4">
+                                        <form asp-controller="Answer" asp-action="Delete" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa câu trả lời này?');">
+                                            <input type="hidden" name="answerId" value="@item.Id" />
+                                            <input type="hidden" name="questionId" value="@item.QuestionId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-pill px-3">
+                                                <i class="bi bi-trash3-fill"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -7,5 +7,6 @@ namespace StudyShare.DTOs.Responses
         public DateTime CreatedAt { get; set; }
         public string AuthorName { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
+        public int QuestionId { get; set; }
     }
 }

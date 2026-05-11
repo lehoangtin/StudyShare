@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace StudyShare.Migrations
 {
     /// <inheritdoc />
-    public partial class DeleteCate : Migration
+    public partial class FixedCascadeDelete : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -314,8 +314,7 @@ namespace StudyShare.Migrations
                         name: "FK_Reports_Answers_AnswerId",
                         column: x => x.AnswerId,
                         principalTable: "Answers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Reports_AspNetUsers_ReporterUserId",
                         column: x => x.ReporterUserId,
@@ -336,8 +335,7 @@ namespace StudyShare.Migrations
                         name: "FK_Reports_Questions_QuestionId",
                         column: x => x.QuestionId,
                         principalTable: "Questions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(

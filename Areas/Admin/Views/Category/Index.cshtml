@@ -60,8 +60,11 @@
                                                    class="btn btn-sm btn-outline-warning rounded-circle me-2 shadow-sm" style="width: 35px; height: 35px;" title="Sửa">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" 
-                                                      onsubmit="return confirm('Xóa danh mục này có thể làm ảnh hưởng đến các tài liệu liên quan. Bạn chắc chắn chứ?')">
+                                               <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" 
+                                                    onsubmit="return confirm('Xóa danh mục này có thể làm ảnh hưởng đến các tài liệu liên quan. Bạn chắc chắn chứ?')">
+                                                    
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    
                                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" style="width: 35px; height: 35px;" title="Xóa">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
