@@ -1,0 +1,83 @@
+:root {
+    --bg-blue: #f0f7ff;
+    --dot-color: #d1e2f3;
+    --main-blue: #2563eb;
+    --sidebar-bg: #ffffff;
+    --text-dark: #0f172a;
+}
+
+body {
+    /* Tạo nền xanh nhạt với chấm bi */
+    background-color: var(--bg-blue) !important;
+    background-image: radial-gradient(var(--dot-color) 1.5px, transparent 1.5px) !important;
+    background-size: 24px 24px !important;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+}
+
+/* Sidebar phong cách nổi (Floating Sidebar) */
+.sidebar-main {
+    width: 280px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid #e2e8f0;
+    padding: 30px 20px;
+    height: 100vh;
+}
+
+/* Card Style xịn xò */
+.card-ss {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Nút Đăng ký nổi bật */
+.btn-register {
+    background: var(--main-blue);
+    color: white !important;
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-register:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-login {
+    color: var(--main-blue) !important;
+    font-weight: 600;
+}
+/* Tiêu đề cực đậm */
+.fw-800 {
+    font-weight: 800 !important;
+    letter-spacing: -0.5px;
+    color: #0f172a !important; /* Màu xanh đen đậm nhất */
+}
+
+/* Tinh chỉnh thanh search nằm ngang */
+.search-pill {
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.search-pill:focus-within {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* Đảm bảo nút tìm kiếm đồng bộ màu xanh */
+.btn-primary-ss {
+    background-color: #2563eb !important;
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    white-space: nowrap;
+}
