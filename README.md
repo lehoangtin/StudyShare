@@ -55,4 +55,4 @@ Dự án được xây dựng dựa trên **Mô hình 3 lớp (3-Tier Architectu
 1. **Clone repository:**
    ```bash
    git clone https://github.com/lehoangtin/StudyShare.git
-   cd PBL3  
+   cd StudyShare
