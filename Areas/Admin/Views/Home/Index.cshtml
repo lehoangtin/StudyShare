@@ -3,7 +3,7 @@
     ViewData["Title"] = "Bảng điều khiển quản trị";
 }
 
-<div class="admin-dashboard-wrapper py-4" min-height: 100vh;">
+<div class="admin-dashboard-wrapper py-4" style="min-height: 100vh;">
     <div class="container-fluid">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 px-2">
             <div>
@@ -18,10 +18,9 @@
         </div>
 
         <div class="row g-4">
-            <div class="col-xl-3 col-lg-4">
-                <div class="sticky-top" style="top: 20px;">
-                    @await Html.PartialAsync("_AdminSidebarPartial")
-                </div>
+            
+            <div class="col-xl-3 col-lg-4 sidebar-column">
+                @await Html.PartialAsync("_AdminSidebarPartial")
             </div>
 
             <div class="col-xl-9 col-lg-8">
@@ -197,10 +196,6 @@
     .ls-1 { letter-spacing: 0.5px; }
     .fw-black { font-weight: 900; }
 
-    /* Fix Grid Balance */
-    .admin-dashboard-wrapper .col-xl-2 { width: 16.66667%; }
-    .admin-dashboard-wrapper .col-xl-10 { width: 83.33333%; }
-
     /* Card Styling */
     .stat-card {
         transition: transform 0.2s ease, shadow 0.2s ease;
@@ -243,11 +238,12 @@
         font-size: 0.9rem;
     }
 
-    /* Responsive adjustments */
-    @@media (max-width: 992px) {
-        .admin-dashboard-wrapper .col-xl-2, 
-        .admin-dashboard-wrapper .col-xl-10 {
-            width: 100%;
+    /* LỖI 3 ĐÃ SỬA: Chống việc Sidebar che nội dung trên màn hình nhỏ (mobile/ipad) */
+    @@media (max-width: 991.98px) {
+        .sidebar-column > div {
+            position: relative !important; /* Tắt sticky trên điện thoại */
+            top: 0 !important;
+            margin-bottom: 2rem;
         }
     }
 </style>

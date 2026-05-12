@@ -225,9 +225,15 @@
                                         <i class="bi bi-file-earmark-text-fill me-2 text-secondary"></i> Tài liệu
                                     </a>
                                 </li>
-                                <li>
+                               <li>
     <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Question" asp-action="Index">
-        <i class="bi bi-chat-dots-fill me-2 text-secondary"></i> Thảo Luận & Bình Luận
+        <i class="bi bi-chat-square-dots-fill me-2" style="color: #0ea5e9;"></i> Thảo luận
+    </a>
+</li>
+
+<li>
+    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Answer" asp-action="Index">
+        <i class="bi bi-reply-all-fill me-2" style="color: #8b5cf6;"></i> Bình luận
     </a>
 </li>
                                 <li>
@@ -237,10 +243,10 @@
                                 </li>
                                 <li><hr class="dropdown-divider my-2"></li>
                                 <li>
-                                    <a class="dropdown-item admin-drop-item text-danger fw-bold" asp-area="Admin" asp-controller="Report" asp-action="Index" style="background-color: #fef2f2;">
-                                        <i class="bi bi-flag-fill me-2"></i> Báo cáo vi phạm
-                                    </a>
-                                </li>
+    <a class="dropdown-item admin-drop-item text-danger fw-bold" asp-area="Admin" asp-controller="User" asp-action="PendingReports" style="background-color: #fef2f2;">
+        <i class="bi bi-flag-fill me-2"></i> Báo cáo vi phạm
+    </a>
+</li>
                             </ul>
                         </div>
                         }
@@ -273,6 +279,28 @@
 
     <main class="main-content">
         <div class="content-container">
+            
+            @if (TempData["Success"] != null || TempData["success"] != null || TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4 d-flex align-items-center mb-4" role="alert" style="background-color: #d1fae5; color: #065f46;">
+                    <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+                    <div class="fw-medium">
+                        @(TempData["Success"] ?? TempData["success"] ?? TempData["SuccessMessage"])
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null || TempData["error"] != null || TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4 d-flex align-items-center mb-4" role="alert" style="background-color: #fee2e2; color: #991b1b;">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+                    <div class="fw-medium">
+                        @(TempData["Error"] ?? TempData["error"] ?? TempData["ErrorMessage"])
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
             @RenderBody()
         </div>
     </main>
