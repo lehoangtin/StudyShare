@@ -35,7 +35,7 @@ namespace StudyShare.Models
                 ("superadmin@studyshare.com", "Trùm Cuối", 9999, 0, false, new[] { "SuperAdmin", "Admin" }),
                 ("admin@gmail.com", "Quản trị viên 1", 1000, 0, false, new[] { "Admin" }),
                 ("lehoangtin@gmail.com", "Lê Hoàng Tín", 500, 0, false, new[] { "Admin" }),
-                ("sinhvien1@gmail.com", "Sinh Viên Chăm Chỉ 1", 200, 0, false, new[] { "User" }),
+                ("sinhvien1@gmail.com", "Ngô Gia Toàn", 200, 0, false, new[] { "User" }),
                 ("sinhvien2@gmail.com", "Sinh Viên Chăm Chỉ 2", 200, 0, false, new[] { "User" }),
                 ("vipham@gmail.com", "User Bị 3 Gậy", 0, 3, false, new[] { "User" }), 
                 ("banned@gmail.com", "User Bị Khóa", -50, 5, true, new[] { "User" })   

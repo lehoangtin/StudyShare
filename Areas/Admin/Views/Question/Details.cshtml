@@ -73,7 +73,7 @@
                                     
                                     <form asp-action="DeleteAnswer" method="post" onsubmit="return confirm('Xóa bình luận này?');">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="answerId" value="@ans.Id" />
+                                        <input type="hidden" name="id" value="@ans.Id" />
                                         <input type="hidden" name="questionId" value="@Model.Id" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 border-0 shadow-sm" title="Xóa vi phạm">
                                             <i class="bi bi-trash"></i>

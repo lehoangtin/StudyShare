@@ -8,6 +8,7 @@ namespace StudyShare.Services.Interfaces
         Task<IEnumerable<CategoryResponse>> GetAllAsync();
         Task<CategoryResponse?> GetByIdAsync(int id);
         Task<CategoryUpdateRequest?> GetForEditAsync(int id);
+        Task<CategoryUpdateRequest> GetForUpdateAsync(int id);
         Task<bool> CreateAsync(CategoryCreateRequest request);
         Task<bool> UpdateAsync(CategoryUpdateRequest request);
         Task<bool> DeleteAsync(int id);

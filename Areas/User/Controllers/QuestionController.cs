@@ -186,7 +186,7 @@ public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
         public async Task<IActionResult> Delete(int id)
         {
            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
             var success = await _questionService.DeleteAsync(id, currentUserId, isAdmin);
 
             if (!success)
@@ -198,18 +198,75 @@ public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
             TempData["Success"] = "Đã xóa câu hỏi thành công!";
             return RedirectToAction(nameof(Index));
         }
-        [HttpGet]
-        public async Task<IActionResult> MyQuestions()
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostAnswer(AnswerCreateViewModel viewModel)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            if (!ModelState.IsValid) return RedirectToAction(nameof(Details), new { id = viewModel.QuestionId });
+
+            var request = _mapper.Map<AnswerCreateRequest>(viewModel);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+            // KIỂM DUYỆT AI CHO CÂU TRẢ LỜI
+            var aiCheck = await _aiService.CheckContentAsync(request.Content);
+            if (aiCheck.isFlagged)
+            {
+                await _userService.PenalizeUserAsync(currentUserId, 10, 1);
+
+                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
+                var autoReport = new Report
+                {
+                    ReporterUserId = currentUserId,
+                    TargetUserId = currentUserId,
+                    QuestionId = request.QuestionId,
+                    Reason = $"[HỆ THỐNG AI CHẶN TRẢ LỜI] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
+                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
+                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
+                };
+                _context.Reports.Add(autoReport);
+                await _context.SaveChangesAsync();
+
+                TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm.";
+                return RedirectToAction(nameof(Details), new { id = request.QuestionId });
+            }
+
+            var success = await _answerService.CreateAsync(request, currentUserId);
+            if (success) 
+            {
+                var user = await _userManager.FindByIdAsync(currentUserId);
+                if (user != null) 
+                {
+                    user.Points += 3;
+                    await _userManager.UpdateAsync(user);
+                }
+                TempData["Success"] = "Đã đăng câu trả lời! Bạn được cộng 3 điểm."; 
+            }
             
-            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            
-            var dtoList = await _questionService.GetUserQuestionsAsync(userId); 
-            var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
-            
-            return View(viewModels);
+            return RedirectToAction(nameof(Details), new { id = request.QuestionId });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        // Cần truyền vào 2 tham số: ID của câu trả lời muốn xóa, và ID của câu hỏi để quay về
+        public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+
+            // Gọi Service xử lý xóa và trừ điểm
+            var success = await _answerService.DeleteAsync(answerId, currentUserId, isAdmin);
+
+            if (!success)
+            {
+                TempData["Error"] = "Xóa câu trả lời thất bại! Bạn không có quyền hoặc câu trả lời không tồn tại.";
+            }
+            else
+            {
+                TempData["Success"] = "Xóa câu trả lời thành công. Điểm của bạn đã được cập nhật!";
+            }
+
+            // Quay lại trang chi tiết của câu hỏi
+            return RedirectToAction(nameof(Details), new { id = questionId });
         }
 
         [HttpPost]

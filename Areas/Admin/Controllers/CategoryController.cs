@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using StudyShare.DTOs.Requests;
 using StudyShare.Services.Interfaces;
 using StudyShare.ViewModels;
-using System; // Cần thêm dòng này để dùng Exception trong khối catch
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -49,7 +48,7 @@ namespace StudyShare.Areas.Admin.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var categoryDto = await _categoryService.GetForEditAsync(id);
+            var categoryDto = await _categoryService.GetForUpdateAsync(id);
             if (categoryDto == null) return NotFound();
             
             // Map từ DTO ra ViewModel để hiển thị lên Form
@@ -71,34 +70,21 @@ namespace StudyShare.Areas.Admin.Controllers
             return View(viewModel);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id) 
+        public async Task<IActionResult> Delete(int id)
         {
-            try 
-            {
-                var success = await _categoryService.DeleteAsync(id);
-                
-                if (success) 
-                {
-                    TempData["Success"] = "Đã xóa danh mục thành công!";
-                }
-                else 
-                {
-                    // Bây giờ nếu false thì chắc chắn 100% là do ID bị sai hoặc không tồn tại
-                    TempData["Error"] = "Xóa thất bại! Danh mục không tồn tại trên hệ thống.";
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                // "Chụp" đúng cái lỗi bị vướng dữ liệu từ Repository ném lên
-                TempData["Error"] = "Không thể xóa! " + ex.Message;
-            }
-            catch (Exception)
-            {
-                // Bắt các lỗi Database ngầm khác (nếu có)
-                TempData["Error"] = "Có lỗi hệ thống xảy ra khi xóa danh mục.";
-            }
+            var category = await _categoryService.GetByIdAsync(id);
+            if (category == null) return NotFound();
+            var viewModel = _mapper.Map<CategoryViewModel>(category);
+            return View(viewModel);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var success = await _categoryService.DeleteAsync(id);
+            if (success) TempData["Success"] = "Xóa danh mục thành công!"; // Thêm dòng này
+            else TempData["Error"] = "Không thể xóa danh mục này.";
             
             return RedirectToAction(nameof(Index));
         }

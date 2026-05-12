@@ -225,6 +225,7 @@
                                         <i class="bi bi-file-earmark-text-fill me-2 text-secondary"></i> Tài liệu
                                     </a>
                                 </li>
+<<<<<<< HEAD
                                <li>
     <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Question" asp-action="Index">
         <i class="bi bi-chat-square-dots-fill me-2" style="color: #0ea5e9;"></i> Thảo luận
@@ -234,6 +235,11 @@
 <li>
     <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Answer" asp-action="Index">
         <i class="bi bi-reply-all-fill me-2" style="color: #8b5cf6;"></i> Bình luận
+=======
+                                <li>
+    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Question" asp-action="Index">
+        <i class="bi bi-chat-dots-fill me-2 text-secondary"></i> Thảo Luận & Bình Luận
+>>>>>>> 9a1c99e4ab275a9a427bb649fd23f413ec6f2fc2
     </a>
 </li>
                                 <li>
@@ -243,10 +249,17 @@
                                 </li>
                                 <li><hr class="dropdown-divider my-2"></li>
                                 <li>
+<<<<<<< HEAD
     <a class="dropdown-item admin-drop-item text-danger fw-bold" asp-area="Admin" asp-controller="User" asp-action="PendingReports" style="background-color: #fef2f2;">
         <i class="bi bi-flag-fill me-2"></i> Báo cáo vi phạm
     </a>
 </li>
+=======
+                                    <a class="dropdown-item admin-drop-item text-danger fw-bold" asp-area="Admin" asp-controller="Report" asp-action="Index" style="background-color: #fef2f2;">
+                                        <i class="bi bi-flag-fill me-2"></i> Báo cáo vi phạm
+                                    </a>
+                                </li>
+>>>>>>> 9a1c99e4ab275a9a427bb649fd23f413ec6f2fc2
                             </ul>
                         </div>
                         }
@@ -279,6 +292,7 @@
 
     <main class="main-content">
         <div class="content-container">
+<<<<<<< HEAD
             
             @if (TempData["Success"] != null || TempData["success"] != null || TempData["SuccessMessage"] != null)
             {
@@ -301,6 +315,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
+=======
+>>>>>>> 9a1c99e4ab275a9a427bb649fd23f413ec6f2fc2
             @RenderBody()
         </div>
     </main>

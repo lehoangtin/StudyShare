@@ -36,17 +36,8 @@
            class="list-group-item list-group-item-action border-0 px-3 py-3 rounded-3 mb-2 transition-all
            @(currentController == "Question" ? "active shadow" : "text-secondary hover-bg-light")">
             <div class="d-flex align-items-center overflow-hidden">
-                <i class="bi bi-question-square me-3 fs-5 @(currentController == "Question" ? "" : "text-info")"></i> 
+                <i class="bi bi-chat-square-text me-3 fs-5 @(currentController == "Question" ? "" : "text-info")"></i> 
                 <span class="fw-bold fs-6 text-truncate">Quản lý thảo luận</span>
-            </div>
-        </a>
-
-        <a asp-area="Admin" asp-controller="Answer" asp-action="Index"
-           class="list-group-item list-group-item-action border-0 px-3 py-3 rounded-3 mb-2 transition-all
-           @(currentController == "Answer" ? "active shadow" : "text-secondary hover-bg-light")">
-            <div class="d-flex align-items-center overflow-hidden">
-                <i class="bi bi-chat-left-quote me-3 fs-5 @(currentController == "Answer" ? "" : "text-primary")"></i> 
-                <span class="fw-bold fs-6 text-truncate">Quản lý bình luận</span>
             </div>
         </a>
 
@@ -79,7 +70,6 @@
                 <span class="fw-bold fs-6 text-truncate">Xử lý vi phạm</span>
             </div>
         </a>
-
 
         @if (User.IsInRole("SuperAdmin"))
         {
