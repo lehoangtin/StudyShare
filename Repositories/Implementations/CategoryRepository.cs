@@ -46,9 +46,8 @@ namespace StudyShare.Repositories.Implementations
 
             if (isUsedByDocuments)
             {
-                // Trả về false để Controller biết mà hiện thông báo lỗi: 
-                // "Không thể xóa danh mục đang có dữ liệu!"
-                return false; 
+                // Ném ra lỗi cụ thể để Controller "chụp" lấy
+                throw new InvalidOperationException("Danh mục này đang chứa tài liệu, không thể xóa!"); 
             }
 
             _context.Categories.Remove(category);

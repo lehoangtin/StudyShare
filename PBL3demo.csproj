@@ -40,6 +40,7 @@
     <Compile Include="Areas/**/*.cs" />
     <Compile Include="ViewModels/**/*.cs" />
     <Compile Include="Repositories/**/*.cs" />
+    <Compile Include="Migrations//*.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 

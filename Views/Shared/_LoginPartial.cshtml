@@ -1,46 +1,42 @@
 @using Microsoft.AspNetCore.Identity
-@* Thêm dòng using này để trình biên dịch hiểu AppUser là gì *@
 @using StudyShare.Models 
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 
-<ul class="navbar-nav ms-auto"> @* ms-auto để đẩy menu sang bên phải *@
-
-    @if (SignInManager.IsSignedIn(User))
-    {
-        var user = await UserManager.GetUserAsync(User);
-        <li class="nav-item d-flex align-items-center me-3">
-            @* Sửa Points thành Point cho khớp với AppUser Model *@
-            <span class="badge rounded-pill bg-warning text-dark me-2">
-                <i class="bi bi-coin"></i> @(user?.Points ?? 0)đ
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    
+    <div class="d-flex flex-row align-items-center gap-3">
+        
+        <div class="d-flex align-items-center bg-white rounded-pill px-3 py-1 shadow-sm border" style="border-color: #e2e8f0 !important;">
+            <span class="badge rounded-pill bg-warning text-dark me-2 fs-6">
+                <i class="bi bi-coin text-warning-emphasis"></i> @(user?.Points ?? 0)
             </span>
-            <span class="navbar-text text-light">
-                👋 Chào, <strong>@(User.Identity?.Name ?? "User")</strong>
+            <span class="text-dark fw-bold small mb-0">
+                Chào, @(User.Identity?.Name ?? "User")
             </span>
-        </li>
+        </div>
 
-        <li class="nav-item">
-            @* Sửa lại asp-controller thành User và asp-action thành Profile *@
-            <a class="nav-link" asp-area="User" asp-controller="User" asp-action="Profile">
-                <i class="bi bi-person"></i> Profile
-            </a>
-        </li>
-        <li class="nav-item">
-            <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link border-0" style="cursor:pointer">
-                    Logout
-                </button>
-            </form>
-        </li>
-    }
-    else
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-        </li>
+        <a asp-area="User" asp-controller="User" asp-action="Profile" 
+           class="d-flex align-items-center text-decoration-none fw-bold px-3 py-2 rounded-pill transition-all bg-light text-primary border"
+           style="border-color: #e2e8f0 !important;">
+            <i class="bi bi-person-fill me-1"></i> Profile
+        </a>
 
-        <li class="nav-item">
-            <a class="nav-link btn btn-primary text-white ms-lg-2" asp-controller="Account" asp-action="Register">Register</a>
-        </li>
-    }
-</ul>
+        <form class="m-0 p-0 d-flex align-items-center" asp-area="" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+            <button type="submit" class="btn text-danger fw-bold rounded-pill px-3 py-2 shadow-sm transition-all d-flex align-items-center" 
+                    style="background-color: #fee2e2; border: 1px solid #fca5a5;">
+                Logout <i class="bi bi-box-arrow-right ms-2"></i>
+            </button>
+        </form>
+        
+    </div>
+}
+else
+{
+    <div class="d-flex align-items-center gap-3">
+        <a class="text-decoration-none fw-bold" style="color: #2563eb;" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+        <a class="btn text-white rounded-pill px-4 fw-bold shadow-sm transition-all" style="background-color: #2563eb;" asp-controller="Account" asp-action="Register">Đăng ký</a>
+    </div>
+}

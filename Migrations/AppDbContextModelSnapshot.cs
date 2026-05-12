@@ -568,7 +568,7 @@ namespace StudyShare.Migrations
                     b.HasOne("StudyShare.Models.Answer", "Answer")
                         .WithMany()
                         .HasForeignKey("AnswerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("StudyShare.Models.Document", "Document")
                         .WithMany()
@@ -578,7 +578,7 @@ namespace StudyShare.Migrations
                     b.HasOne("StudyShare.Models.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("StudyShare.Models.AppUser", "Reporter")
                         .WithMany()

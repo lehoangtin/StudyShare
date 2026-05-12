@@ -30,6 +30,11 @@ namespace StudyShare.Repositories.Implementations
             _context.Answers.Add(answer);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<bool> UpdateAsync(Answer answer)
+        {
+            _context.Answers.Update(answer);
+            return await _context.SaveChangesAsync() > 0;
+        }
 
         public async Task<bool> DeleteAsync(Answer answer)
         {
@@ -42,10 +47,14 @@ namespace StudyShare.Repositories.Implementations
             _context.Answers.Remove(answer);
             return await _context.SaveChangesAsync() > 0;
         }
-
         public async Task<IEnumerable<Answer>> GetAllAsync()
         {
-            return await _context.Answers.ToListAsync();
+            // Cập nhật: Include thêm User và Question để Admin dễ quản lý
+            return await _context.Answers
+                .Include(a => a.User)
+                .Include(a => a.Question)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
         }
         public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(int questionId)
         {
@@ -55,6 +64,13 @@ namespace StudyShare.Repositories.Implementations
                 .OrderBy(a => a.CreatedAt)
                 .ToListAsync();
         }
-
+        public async Task<IEnumerable<Answer>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Answers
+                .Include(a => a.Question) // Để hiển thị câu trả lời này thuộc câu hỏi nào
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

@@ -42,6 +42,7 @@ namespace StudyShare.Services.Implementations
             var category = _mapper.Map<Category>(request);
             return await _categoryRepository.CreateAsync(category);
         }
+        
 
         public async Task<bool> UpdateAsync(CategoryUpdateRequest request)
         {

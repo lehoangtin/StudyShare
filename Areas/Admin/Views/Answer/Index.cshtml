@@ -1,0 +1,99 @@
+@model IEnumerable<StudyShare.Models.Answer>
+@{
+    ViewData["Title"] = "Quản lý Bình luận";
+}
+
+<div class="container-fluid py-4" style="min-height: 100vh;">
+    <div class="row g-4">
+        <div class="col-xl-3 col-lg-4">
+            <div class="sticky-top" style="top: 20px;">
+                @await Html.PartialAsync("_AdminSidebarPartial")
+            </div>
+        </div>
+
+        <div class="col-xl-9 col-lg-8">
+            <div class="card shadow border-0 rounded-4 h-100">
+                <div class="card-header bg-primary text-white p-3 border-0">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text-fill me-2"></i> Danh sách tất cả Bình luận</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="15%">Người đăng</th>
+                                    <th width="35%">Nội dung bình luận</th>
+                                    <th width="20%">Thuộc Câu hỏi</th>
+                                    <th width="15%">Ngày đăng</th>
+                                    <th width="10%">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-center">@item.Id</td>
+                                            <td>
+                                                <div class="fw-bold text-primary">@(item.User?.FullName ?? item.User?.UserName ?? "Ẩn danh")</div>
+                                            </td>
+                                            <td>
+                                                <div style="max-height: 80px; overflow-y: auto;" class="text-dark small">
+                                                    @item.Content
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="/User/Question/Details/@item.QuestionId" target="_blank" class="badge bg-secondary text-decoration-none p-2">
+                                                    Bài viết #@item.QuestionId <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                                </a>
+                                            </td>
+                                            <td class="text-center text-muted small">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td class="text-center">
+                                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bình luận này khỏi hệ thống?');">
+                                                    <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm">
+                                                        <i class="bi bi-trash"></i> Xóa
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-5">
+                                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                            Chưa có bình luận nào trên hệ thống.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                Swal.fire({ icon: 'success', title: 'Thành công!', text: '@Html.Raw(TempData["Success"])', timer: 3000 });
+                </text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                Swal.fire({ icon: 'error', title: 'Lỗi!', text: '@Html.Raw(TempData["Error"])', timer: 3000 });
+                </text>
+            }
+        });
+    </script>
+}

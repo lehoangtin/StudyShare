@@ -73,6 +73,7 @@
         .nav-links {
             display: flex;
             gap: 5px;
+            align-items: center;
         }
 
         /* STYLE ICON & CHỮ TRONG MENU */
@@ -118,6 +119,37 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
             text-decoration: none;
         }
+
+        /* ===== CSS CHO DROPDOWN ADMIN MỚI THÊM ===== */
+        .admin-drop-item {
+            font-weight: 600;
+            color: #475569;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .admin-drop-item:hover {
+            background-color: #f1f5f9;
+            color: #2563eb;
+            transform: translateX(4px);
+        }
+
+        .admin-drop-item.text-danger:hover {
+            background-color: #fee2e2 !important;
+            color: #ef4444 !important;
+        }
+
+        .dropdown-menu {
+            animation: slideIn 0.2s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* ========================================= */
 
         .main-content {
             margin-top: var(--nav-height);
@@ -168,10 +200,50 @@
                 {
                     @if (User.IsInRole("Admin"))
                     {
-                        <a class="nav-custom-link" asp-area="Admin" asp-controller="Home" asp-action="Index">
-                           <i class="bi bi-shield-lock-fill"></i> Quản trị
-                        </a>
-                    }
+                        <div class="dropdown">
+                            <a class="nav-custom-link dropdown-toggle" href="#" role="button" id="adminMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" 
+                               style="background-color: #eff6ff; color: #2563eb;">
+                                <i class="bi bi-shield-lock-fill"></i> Quản trị
+                            </a>
+                            
+                            <ul class="dropdown-menu shadow-lg border-0 rounded-4 mt-3 p-2" aria-labelledby="adminMenuDropdown" style="min-width: 240px;">
+                                <li>
+                                    <div class="dropdown-header text-uppercase fw-bold text-muted" style="font-size: 0.75rem; letter-spacing: 1px;">Menu Quản Trị</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                        <i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="User" asp-action="Index">
+                                        <i class="bi bi-people-fill me-2 text-secondary"></i> Người dùng
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Document" asp-action="Index">
+                                        <i class="bi bi-file-earmark-text-fill me-2 text-secondary"></i> Tài liệu
+                                    </a>
+                                </li>
+                                <li>
+    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Question" asp-action="Index">
+        <i class="bi bi-chat-dots-fill me-2 text-secondary"></i> Thảo Luận & Bình Luận
+    </a>
+</li>
+                                <li>
+                                    <a class="dropdown-item admin-drop-item" asp-area="Admin" asp-controller="Category" asp-action="Index">
+                                        <i class="bi bi-tags-fill me-2 text-secondary"></i> Danh mục
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-2"></li>
+                                <li>
+                                    <a class="dropdown-item admin-drop-item text-danger fw-bold" asp-area="Admin" asp-controller="Report" asp-action="Index" style="background-color: #fef2f2;">
+                                        <i class="bi bi-flag-fill me-2"></i> Báo cáo vi phạm
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        }
                     else
                     {
                         <a class="nav-custom-link" asp-area="User" asp-controller="Document" asp-action="Create">
