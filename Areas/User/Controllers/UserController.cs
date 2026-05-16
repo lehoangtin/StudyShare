@@ -1,0 +1,140 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using StudyShare.Models;
+using StudyShare.ViewModels;
+using StudyShare.Services.Interfaces;
+using System.Threading.Tasks;
+using System.Security.Claims; 
+using AutoMapper;
+using System.Collections.Generic;
+using System.Linq;
+using StudyShare.DTOs.Requests;
+using StudyShare.Services.Implementations; // Thêm dòng này
+
+namespace StudyShare.Areas.User.Controllers
+{
+    [Area("User")]
+    public class UserController : Controller
+    {
+        private readonly IUserService _userService;
+        private readonly IDocumentService _documentService;
+        private readonly IQuestionService _questionService;
+        private readonly IAnswerService _answerService;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IReportService _reportService;
+        private readonly IMapper _mapper;
+
+        public UserController(
+            IUserService userService,
+            UserManager<AppUser> userManager,
+            IReportService reportService,
+            IMapper mapper)
+        {
+            _userService = userService;
+            _userManager = userManager;
+            _reportService = reportService;
+            _mapper = mapper;
+        }
+            
+        public IActionResult Index()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return RedirectToAction("Profile", new { id = userId });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Profile()
+        {
+           var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account", new { area = "" });
+
+            // SỬA: Dùng GetUserProfileAsync thay vì GetByIdAsync
+            var user = await _userService.GetUserProfileAsync(userId);
+            if (user == null) return NotFound();
+
+            // Map Entity sang ViewModel
+            var viewModel = _mapper.Map<UserViewModel>(user);
+            
+            if (string.IsNullOrEmpty(viewModel.FullName)) {
+                viewModel.FullName = user.UserName;
+            }
+
+            return View(viewModel);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Edit()
+        {
+           var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account", new { area = "" });
+
+            // SỬA: Dùng GetUserProfileAsync thay vì GetByIdAsync
+            var user = await _userService.GetUserProfileAsync(userId);
+            if (user == null) return NotFound();
+
+            // Map Entity sang EditViewModel để đưa lên Form
+            var viewModel = _mapper.Map<UserEditViewModel>(user);
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Edit(UserEditViewModel viewModel)
+        {
+            if (!ModelState.IsValid) return View(viewModel);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            // Map sang AppUser vì hàm UpdateUserProfileAsync của bạn nhận AppUser
+            var appUserUpdate = new AppUser 
+            { 
+                FullName = viewModel.FullName            };
+
+            // Gọi đúng hàm xử lý cập nhật và upload file (AvatarFile) trong Service của bạn
+            var success = await _userService.UpdateUserProfileAsync(userId, appUserUpdate, viewModel.AvatarFile);
+            
+            if (success)
+            {
+                TempData["Success"] = "Cập nhật thông tin thành công!";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật.");
+            return View(viewModel);
+        }
+
+        [Authorize]
+        public IActionResult ChangePassword() => View();
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors) ModelState.AddModelError("", error.Description);
+                return View(model);
+            }
+
+            return RedirectToAction("Profile", new { id = user.Id });
+        }
+        [Authorize]
+        public async Task<IActionResult> MyViolations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var reportsDto = await _reportService.GetReportsForUserAsync(userId);
+            var viewModel = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
+            
+            return View(viewModel);
+        }
+    }
+}

@@ -1,0 +1,121 @@
+@model IEnumerable<StudyShare.ViewModels.QuestionViewModel>
+@{
+    ViewData["Title"] = "Quản lý thảo luận";
+}
+
+<div class="container-fluid py-4"; min-height: 100vh;">
+    <div class="row g-4">
+        <div class="col-xl-3 col-lg-4">
+            <div class="sticky-top" style="top: 20px;">
+                @await Html.PartialAsync("_AdminSidebarPartial")
+            </div>
+        </div>
+
+        <div class="col-xl-9 col-lg-8">
+            @* @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 mb-4 px-4">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            } *@
+
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-4 border-bottom px-4">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-5">
+                            <h4 class="m-0 fw-bold text-primary"><i class="bi bi-chat-square-text me-2"></i>Danh sách câu hỏi</h4>
+                        </div>
+                        <div class="col-md-7">
+                            <form asp-action="Index" method="get">
+                                <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                                    <span class="input-group-text bg-light border-0 pe-1"><i class="bi bi-search text-muted"></i></span>
+                                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control border-0 bg-light" placeholder="Tìm kiếm nội dung, người đăng...">
+                                    <button type="submit" class="btn btn-primary px-4 fw-medium">Tìm kiếm</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 custom-table">
+                            <thead class="bg-light text-uppercase small text-muted">
+                                <tr>
+                                    <th class="ps-4 py-3" style="width: 45%;">Nội dung thảo luận</th>
+                                    <th class="py-3">Thông tin</th>
+                                    <th class="py-3 text-center">Trả lời</th>
+                                    <th class="text-center py-3 pe-4">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 py-3">
+                                                <div class="d-flex align-items-start">
+                                                    <div class="bg-info-subtle text-info rounded-circle p-2 me-3 mt-1 shadow-sm">
+                                                        <i class="bi bi-question-lg"></i>
+                                                    </div>
+                                                    <div>
+                                                        <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark fw-bold d-block mb-1 text-truncate" style="max-width: 400px;" title="@item.Content">
+                                                            @item.Content
+                                                        </a>
+                                                        <span class="badge bg-light text-secondary border rounded-pill">@item.CategoryName</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div>
+                                                        <div class="fw-bold text-dark">@item.AuthorName</div>
+                                                        <div class="text-muted small"><i class="bi bi-clock me-1"></i>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge @(item.AnswerCount > 0 ? "bg-success" : "bg-secondary") rounded-pill fs-6 px-3 shadow-sm">
+                                                    @item.AnswerCount <i class="bi bi-chat-dots ms-1"></i>
+                                                </span>
+                                            </td>
+                                            <td class="text-center pe-4">
+                                                <div class="btn-group shadow-sm rounded-pill overflow-hidden border">
+                                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-white border-0 py-2 px-3 text-primary" title="Xem chi tiết">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </a>
+                                                    <form asp-action="Delete" method="post" class="m-0" onsubmit="return confirm('Xóa vĩnh viễn câu hỏi này cùng tất cả bình luận?');">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <button type="submit" class="btn btn-white border-0 py-2 px-3 text-danger border-start" title="Xóa câu hỏi">
+                                                            <i class="bi bi-trash-fill"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted border-0">
+                                            <i class="bi bi-chat-square-text display-4 opacity-50 d-block mb-3"></i>
+                                            <p class="mb-0">Không tìm thấy câu hỏi nào.</p>
+                                            <a asp-action="Index" class="btn btn-link btn-sm mt-1">Xóa bộ lọc</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-white { background-color: #fff; }
+    .btn-white:hover { background-color: #f8f9fa; }
+</style>
