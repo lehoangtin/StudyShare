@@ -25,8 +25,6 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 async def get_api_key(header_value: Optional[str] = Security(api_key_header)):
     """Hàm kiểm tra mã bí mật giữa C# (Backend) và Python (Microservice)"""
-    print(f"Key trong file .env là : '{internal_api_key}'")
-    print(f"Key nhập trên web là   : '{header_value}'")
     if header_value and header_value == internal_api_key:
         return header_value
     raise HTTPException(
