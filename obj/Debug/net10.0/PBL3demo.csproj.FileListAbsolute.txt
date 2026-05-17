@@ -1290,3 +1290,6 @@ D:/PBL3demo/obj/Debug/net10.0/compressed/gy78978w93-{0}-g8gpsgvpzx-g8gpsgvpzx.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/PBL3demo.pdb
 /Users/mac/Documents/Web/obj/Debug/net10.0/PBL3demo.genruntimeconfig.cache
 /Users/mac/Documents/Web/obj/Debug/net10.0/ref/PBL3demo.dll
+/Users/mac/Documents/Web/bin/Debug/net10.0/Ai/venv/lib/python3.13/site-packages/cryptography-48.0.0.dist-info/sboms/cryptography-rust.cyclonedx.json
+/Users/mac/Documents/Web/bin/Debug/net10.0/Ai/venv/lib/python3.13/site-packages/cryptography-48.0.0.dist-info/sboms/sbom.json
+/Users/mac/Documents/Web/bin/Debug/net10.0/Ai/venv/lib/python3.13/site-packages/pydantic_core-2.46.4.dist-info/sboms/pydantic-core.cyclonedx.json

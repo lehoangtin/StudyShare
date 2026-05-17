@@ -12,8 +12,8 @@ using StudyShare.Models;
 namespace StudyShare.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260511163107_Initial_Final_Real")]
-    partial class Initial_Final_Real
+    [Migration("20260513152734_InitCleanDB")]
+    partial class InitCleanDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

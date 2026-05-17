@@ -1,11 +1,12 @@
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using StudyShare.Services.Interfaces;
+
 namespace StudyShare.Services
 {
-    // Lớp này dùng để hứng kết quả trả về từ Python
     public class AIModerationResponse
     {
         public bool isFlagged { get; set; }
@@ -20,20 +21,30 @@ namespace StudyShare.Services
     public class AIService : IAIService
     {
         private readonly HttpClient _httpClient;
+        
+        private readonly string _apiKey = "DayLaMatKhauBaoMatCuaToi";
 
         public AIService(HttpClient httpClient)
         {
             _httpClient = httpClient;
+            
+            _httpClient.BaseAddress = new Uri("http://127.0.0.1:8000/");
+            if (!_httpClient.DefaultRequestHeaders.Contains("X-PBL3-API-KEY"))
+            {
+                _httpClient.DefaultRequestHeaders.Add("X-PBL3-API-KEY", _apiKey);
+            }
         }
+
         // Hàm gửi tin nhắn Chat sang Python và nhận phản hồi
         public async Task<string> ChatWithAIAsync(string message)
         {
-            var payload = new { message = message };
+            var payload = new { session_id = "default_user", message = message };
             var jsonContent = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
             try
             {
-                var response = await _httpClient.PostAsync("http://127.0.0.1:8000/api/chat", jsonContent);
+                // Gọi API 
+                var response = await _httpClient.PostAsync("api/chat", jsonContent);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -41,11 +52,18 @@ namespace StudyShare.Services
                     var result = JsonSerializer.Deserialize<ChatResponse>(responseString);
                     return result?.reply ?? "Xin lỗi, không thể xử lý phản hồi từ AI.";
                 }
+                else
+                {
+                    // Hiển thị lỗi HTTP nếu có 
+                    return $"Lỗi Server AI: HTTP {response.StatusCode} - Vui lòng kiểm tra lại API Key hoặc Python Console.";
+                }
             }
-            catch { }
-
-            return "Xin lỗi, Server AI đang ngủ trưa. Vui lòng thử lại sau!";
+            catch (Exception ex)
+            {
+                return $"Lỗi kết nối C#: {ex.Message}";
+            }
         }
+
         // Hàm gửi nội dung sang Python kiểm tra và nhận kết quả có bị chặn hay không
         public async Task<AIModerationResponse> CheckContentAsync(string text)
         {
@@ -54,8 +72,7 @@ namespace StudyShare.Services
 
             try
             {
-                // Gửi sang Python
-                var response = await _httpClient.PostAsync("http://127.0.0.1:8000/api/moderate", jsonContent);
+                var response = await _httpClient.PostAsync("api/moderate", jsonContent);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -67,13 +84,11 @@ namespace StudyShare.Services
                 }
                 else
                 {
-                    // Nếu Python từ chối/ báo lỗi, ép C# hiển thị lỗi đó ra
                     return new AIModerationResponse { isFlagged = true, reason = $"Python báo lỗi HTTP: {response.StatusCode}" };
                 }
             }
             catch (Exception ex)
             {
-                // NẾU C# KHÔNG TÌM THẤY PYTHON, IN THẲNG LỖI ĐÓ RA MÀN HÌNH ĐỂ DEBUG!
                 return new AIModerationResponse { isFlagged = true, reason = $"Lỗi kết nối C#: {ex.Message}" };
             }
         }

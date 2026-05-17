@@ -3,7 +3,7 @@
     var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 }
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="position: sticky; top: 100px; z-index: 1;">
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="position: sticky; top: 100px; z-index: 0;">
     <div class="card-header bg-dark text-white p-4 text-center border-0">
         <div class="mb-3">
             <i class="bi bi-shield-lock-fill display-4 text-warning"></i>
@@ -38,6 +38,14 @@
             <div class="d-flex align-items-center overflow-hidden">
                 <i class="bi bi-chat-square-text me-3 fs-5 @(currentController == "Question" ? "" : "text-info")"></i> 
                 <span class="fw-bold fs-6 text-truncate">Quản lý thảo luận</span>
+            </div>
+        </a>
+        <a asp-area="Admin" asp-controller="Answer" asp-action="Index"
+           class="list-group-item list-group-item-action border-0 px-3 py-3 rounded-3 mb-2 transition-all
+           @(currentController == "Answer" ? "active shadow" : "text-secondary hover-bg-light")">
+            <div class="d-flex align-items-center overflow-hidden">
+                <i class="bi bi-chat-dots me-3 fs-5 @(currentController == "Answer" ? "" : "text-secondary")"></i> 
+                <span class="fw-bold fs-6 text-truncate">Quản lý câu trả lời</span>
             </div>
         </a>
 

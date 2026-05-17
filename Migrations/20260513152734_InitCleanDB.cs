@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace StudyShare.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial_Final_Real : Migration
+    public partial class InitCleanDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
