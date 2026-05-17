@@ -1215,7 +1215,6 @@ D:/PBL3demo/obj/Debug/net10.0/compressed/gy78978w93-{0}-g8gpsgvpzx-g8gpsgvpzx.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/nezrqnk58p-{0}-muycvpuwrr-muycvpuwrr.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/v0zgfp0y55-{0}-87fc7y1x7t-87fc7y1x7t.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/yfc7ypekbg-{0}-mlv21k5csn-mlv21k5csn.gz
-/Users/mac/Documents/Web/obj/Debug/net10.0/compressed/dbmrx8ag0w-{0}-vxw8bhbg8z-vxw8bhbg8z.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/y3x7f539c6-{0}-61n19gt1b8-61n19gt1b8.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/c9qzb80arv-{0}-ow7vr36ags-ow7vr36ags.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/py34env9ux-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -1277,8 +1276,6 @@ D:/PBL3demo/obj/Debug/net10.0/compressed/gy78978w93-{0}-g8gpsgvpzx-g8gpsgvpzx.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/pv9vk25vlg-{0}-muycvpuwrr-muycvpuwrr.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/w6ofn42qnc-{0}-87fc7y1x7t-87fc7y1x7t.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/compressed/gy78978w93-{0}-6m62wbxgds-6m62wbxgds.gz
-/Users/mac/Documents/Web/obj/Debug/net10.0/compressed/8fatsv72s5-{0}-bflv5174ho-bflv5174ho.gz
-/Users/mac/Documents/Web/obj/Debug/net10.0/compressed/37fjagrjpr-{0}-bflv5174ho-bflv5174ho.gz
 /Users/mac/Documents/Web/obj/Debug/net10.0/staticwebassets.build.json
 /Users/mac/Documents/Web/obj/Debug/net10.0/staticwebassets.build.json.cache
 /Users/mac/Documents/Web/obj/Debug/net10.0/staticwebassets.development.json
@@ -1293,3 +1290,6 @@ D:/PBL3demo/obj/Debug/net10.0/compressed/gy78978w93-{0}-g8gpsgvpzx-g8gpsgvpzx.gz
 /Users/mac/Documents/Web/bin/Debug/net10.0/Ai/venv/lib/python3.13/site-packages/cryptography-48.0.0.dist-info/sboms/cryptography-rust.cyclonedx.json
 /Users/mac/Documents/Web/bin/Debug/net10.0/Ai/venv/lib/python3.13/site-packages/cryptography-48.0.0.dist-info/sboms/sbom.json
 /Users/mac/Documents/Web/bin/Debug/net10.0/Ai/venv/lib/python3.13/site-packages/pydantic_core-2.46.4.dist-info/sboms/pydantic-core.cyclonedx.json
+/Users/mac/Documents/Web/obj/Debug/net10.0/compressed/dbmrx8ag0w-{0}-cz32utl8z5-cz32utl8z5.gz
+/Users/mac/Documents/Web/obj/Debug/net10.0/compressed/8fatsv72s5-{0}-9cen4he9m5-9cen4he9m5.gz
+/Users/mac/Documents/Web/obj/Debug/net10.0/compressed/37fjagrjpr-{0}-9cen4he9m5-9cen4he9m5.gz

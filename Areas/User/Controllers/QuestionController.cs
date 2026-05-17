@@ -20,8 +20,8 @@ namespace StudyShare.Areas.User.Controllers
         private readonly IMapper _mapper;
         private readonly IAIService _aiService; 
         private readonly IUserService _userService;
+        private readonly IReportService _reportService;
         
-        private readonly AppDbContext _context;
         private readonly UserManager<AppUser> _userManager;
 
         public QuestionController(
@@ -30,7 +30,7 @@ namespace StudyShare.Areas.User.Controllers
             IMapper mapper, 
             IAIService aiService, 
             IUserService userService,
-            AppDbContext context,
+            IReportService reportService,
             UserManager<AppUser> userManager)
         {
             _questionService = questionService;
@@ -38,7 +38,7 @@ namespace StudyShare.Areas.User.Controllers
             _mapper = mapper;
             _aiService = aiService;
             _userService = userService;
-            _context = context;
+            _reportService = reportService;
             _userManager = userManager;
         }
 
@@ -87,35 +87,23 @@ namespace StudyShare.Areas.User.Controllers
             if (!ModelState.IsValid) return View(viewModel);
             
             var request = _mapper.Map<QuestionCreateRequest>(viewModel);
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
 
-            // KIỂM DUYỆT AI
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
-                // Xử phạt user
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
 
-                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
-                var autoReport = new Report
-                {
-                    ReporterUserId = currentUserId, 
-                    TargetUserId = currentUserId,
-                    Reason = $"[HỆ THỐNG AI CHẶN TỰ ĐỘNG] Lý do: {aiCheck.reason}. Nội dung gốc: {request.Content}",
-                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
-                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
-                };
-                _context.Reports.Add(autoReport);
-                await _context.SaveChangesAsync();
+                // Gọi qua ReportService
+                await _reportService.CreateAutoReportAsync(currentUserId, aiCheck.reason, "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo).");
 
                 TempData["Error"] = $"Nội dung vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
                 return View(viewModel);
             }
 
-            // TẠO CÂU HỎI
             await _questionService.CreateAsync(request, currentUserId);
 
-            // CỘNG ĐIỂM
             var user = await _userManager.FindByIdAsync(currentUserId);
             if (user != null) 
             {
@@ -186,7 +174,8 @@ public async Task<IActionResult> Edit(QuestionEditViewModel viewModel)
         public async Task<IActionResult> Delete(int id)
         {
            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+           if (string.IsNullOrEmpty(currentUserId)) return Unauthorized(); // Fix lỗi null CS8604
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
             var success = await _questionService.DeleteAsync(id, currentUserId, isAdmin);
 
             if (!success)
@@ -206,27 +195,17 @@ bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
             if (!ModelState.IsValid) return RedirectToAction(nameof(Details), new { id = viewModel.QuestionId });
 
             var request = _mapper.Map<AnswerCreateRequest>(viewModel);
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
 
-            // KIỂM DUYỆT AI CHO CÂU TRẢ LỜI
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
-
-                // 🔥 LƯU REPORT VÀ ĐÁNH DẤU LÀ ĐÃ GIẢI QUYẾT
-                var autoReport = new Report
-                {
-                    ReporterUserId = currentUserId,
-                    TargetUserId = currentUserId,
-                    QuestionId = request.QuestionId,
-                    Reason = $"[HỆ THỐNG AI CHẶN TRẢ LỜI] Lý do: {aiCheck.reason}. Nội dung vi phạm: {request.Content}",
-                    IsResolved = true, // Tự động đưa vào mục đã giải quyết
-                    ActionTaken = "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo)."
-                };
-                _context.Reports.Add(autoReport);
-                await _context.SaveChangesAsync();
-
+                
+                // Gọi qua ReportService
+                await _reportService.CreateAutoReportAsync(currentUserId, aiCheck.reason, "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo).", qid: request.QuestionId);
+                
                 TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm.";
                 return RedirectToAction(nameof(Details), new { id = request.QuestionId });
             }
@@ -251,6 +230,7 @@ bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
         public async Task<IActionResult> DeleteAnswer(int answerId, int questionId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized(); // Fix lỗi null CS8604
             bool isAdmin = User.IsInRole("Admin");
 
             // Gọi Service xử lý xóa và trừ điểm
@@ -270,46 +250,80 @@ bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Report(int? questionId, int? answerId, string reason)
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Report(int? questionId, int? answerId, string reason)
+{
+    var reporterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(reporterId)) return Unauthorized();
+
+    string targetUserId = "";
+    int redirectQuestionId = 0; // Biến lưu sẵn ID để redirect về trang Details an toàn
+
+    // Nếu là report câu trả lời
+    if (answerId.HasValue)
+    {
+        var answer = await _answerService.GetByIdAsync(answerId.Value);
+        if (answer != null) 
         {
-            var reporterId = _userManager.GetUserId(User);
-            string targetUserId = "";
+            targetUserId = answer.UserId;
+            redirectQuestionId = answer.QuestionId;
+        }
+    }
+    // Nếu là report câu hỏi
+    else if (questionId.HasValue)
+    {
+        var question = await _questionService.GetByIdAsync(questionId.Value);
+        if (question != null) 
+        {
+            targetUserId = question.UserId;
+            redirectQuestionId = question.Id;
+        }
+    }
 
-            if (answerId.HasValue)
-            {
-                var answer = await _context.Answers.FindAsync(answerId);
-                if (answer != null) targetUserId = answer.UserId;
-            }
-            else if (questionId.HasValue)
-            {
-                var question = await _context.Questions.FindAsync(questionId);
-                if (question != null) targetUserId = question.UserId;
-            }
+    // Kiểm tra tính hợp lệ (Không được tự report chính mình)
+    if (string.IsNullOrEmpty(targetUserId) || reporterId == targetUserId)
+    {
+        TempData["Error"] = "Thao tác không hợp lệ.";
+        return RedirectToAction("Details", new { id = redirectQuestionId });
+    }
 
-            if (string.IsNullOrEmpty(targetUserId) || reporterId == targetUserId)
-            {
-                TempData["Error"] = "Thao tác không hợp lệ.";
-                int returnId = questionId ?? (answerId.HasValue ? _context.Answers.Find(answerId)?.QuestionId ?? 0 : 0);
-                return RedirectToAction("Details", new { id = returnId });
-            }
+    // Lưu Report thông qua Service
+    await _reportService.CreateReportAsync(reporterId, targetUserId, reason, questionId, answerId);
 
-            var report = new Report
-            {
-                ReporterUserId = reporterId,
-                TargetUserId = targetUserId,
-                QuestionId = questionId,
-                AnswerId = answerId,
-                Reason = reason
-            };
-
-            _context.Reports.Add(report);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Cảm ơn bạn! Báo cáo đã được gửi tới Quản trị viên.";
+    TempData["Success"] = "Cảm ơn bạn! Báo cáo đã được gửi tới Quản trị viên.";
+    
+    // Trả về đúng trang chi tiết câu hỏi một cách an toàn tuyệt đối
+    return RedirectToAction("Details", new { id = redirectQuestionId });
+}
+        public async Task<IActionResult> MyQuestions()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
             
-            int redirectId = questionId ?? (await _context.Answers.FindAsync(answerId)).QuestionId;
-            return RedirectToAction("Details", new { id = redirectId });
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            // Lấy qua Service và map qua ViewModel
+            var dtoList = await _questionService.GetUserQuestionsAsync(userId); 
+            var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
+            
+            return View(viewModels);
+        }
+        // redirect về MyQuestions sau khi xóa để dễ dàng quản lý lại các câu hỏi còn lại của mình
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken] // Nên thêm ValidateAntiForgeryToken cho các action POST xóa dữ liệu
+        public async Task<IActionResult> DeleteQuestion(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            // SỬA Ở ĐÂY: Đổi thành DeleteAsync và truyền 'false' cho isAdmin
+            var success = await _questionService.DeleteAsync(id, userId, false);
+            
+            if (success) TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
+            else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
+            
+            return RedirectToAction(nameof(MyQuestions));
         }
     }
 }

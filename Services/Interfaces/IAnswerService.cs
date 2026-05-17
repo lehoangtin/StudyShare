@@ -14,5 +14,6 @@ namespace StudyShare.Services.Interfaces
         Task<bool> DeleteByAdminAsync(int answerId);
         Task<IEnumerable<Answer>> GetAllForAdminAsync();
         Task<IEnumerable<AnswerResponse>> GetByUserIdAsync(string userId);
+        Task<AnswerResponse> GetByIdAsync(int id);
     }
 }

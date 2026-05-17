@@ -21,6 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("PBL3ConnectionString")
     ));
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 // builder.Services.AddHttpClient<ai.Services.AIService>();
 // 2. Đăng ký AIService
@@ -33,13 +34,13 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<StudyShare.Mappings.MappingProfile>();
 });
 builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.ICategoryService, StudyShare.Services.Implementations.CategoryService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.IQuestionService, StudyShare.Services.Implementations.QuestionService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.IUserService, StudyShare.Services.Implementations.UserService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.IAnswerService, StudyShare.Services.Implementations.AnswerService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.IReportService, StudyShare.Services.Implementations.ReportService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.IDocumentService, StudyShare.Services.Implementations.DocumentService>();
-builder.Services.AddScoped<StudyShare.Services.Interfaces.IAuthService, StudyShare.Services.Implementations.AuthService>(); 
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAnswerService, AnswerService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
+builder.Services.AddScoped<IAuthService, AuthService>(); 
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();

@@ -59,23 +59,37 @@ namespace StudyShare.Services.Implementations
         // Thêm hàm này vào class ReportService
 // Trong ReportService.cs
 public async Task<int> CreateAutoReportAsync(string targetUserId, string reason, string actionTaken, int? docId = null, int? qid = null)
-{
-    var report = new Report
-    {
-        TargetUserId = targetUserId,
-        ReporterUserId = null, 
-        Reason = "[AI Phát hiện] " + reason,
-        DocumentId = docId,
-        QuestionId = qid,
-        IsResolved = true, 
-        ActionTaken = actionTaken,
-        CreatedAt = DateTime.Now
-    };
+        {
+            var report = new Report
+            {
+                TargetUserId = targetUserId,
+                ReporterUserId = null, 
+                Reason = "[AI Phát hiện] " + reason,
+                DocumentId = docId,
+                QuestionId = qid,
+                IsResolved = true, 
+                ActionTaken = actionTaken,
+                CreatedAt = DateTime.Now
+            };
 
-    // 🔥 SỬA CHỖ NÀY: Dùng CreateAsync thay vì UpdateAsync
-    var savedReport = await _reportRepository.CreateAsync(report); 
-    
-    return savedReport.Id;
-}
+            var savedReport = await _reportRepository.CreateAsync(report); 
+            return savedReport.Id;
+        }
+        public async Task<bool> CreateReportAsync(string reporterId, string targetUserId, string reason, int? questionId = null, int? answerId = null)
+        {
+            var report = new Report
+            {
+                ReporterUserId = reporterId,
+                TargetUserId = targetUserId,
+                Reason = reason,
+                QuestionId = questionId,
+                AnswerId = answerId,
+                IsResolved = false,
+                CreatedAt = DateTime.Now
+            };
+
+            await _reportRepository.CreateAsync(report);
+            return true;
+        }
     }
 }

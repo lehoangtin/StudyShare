@@ -1,8 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StudyShare.DTOs.Requests;
+using StudyShare.Models;
 using StudyShare.Services.Interfaces;
 using StudyShare.ViewModels;
 using System.Security.Claims;
@@ -14,15 +16,23 @@ namespace StudyShare.Areas.User.Controllers
     public class DocumentController : Controller
     {
         private readonly IDocumentService _documentService;
-        private readonly IUserService _userService; // 🔥 Đã khai báo UserService
+        private readonly IUserService _userService;
+        private readonly UserManager<AppUser> _userManager;
         private readonly ICategoryService _categoryService;
-        private readonly IWebHostEnvironment _webHostEnvironment; // 🔥 Đã khai báo IWebHostEnvironment
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IMapper _mapper;
 
-        public DocumentController(IDocumentService documentService, IUserService userService, ICategoryService categoryService, IWebHostEnvironment webHostEnvironment, IMapper mapper)
+        public DocumentController(
+            IDocumentService documentService, 
+            IUserService userService, 
+            UserManager<AppUser> userManager, 
+            ICategoryService categoryService, 
+            IWebHostEnvironment webHostEnvironment, 
+            IMapper mapper)
         {
             _documentService = documentService;
             _userService = userService;
+            _userManager = userManager;
             _categoryService = categoryService;
             _webHostEnvironment = webHostEnvironment;
             _mapper = mapper;
@@ -31,16 +41,11 @@ namespace StudyShare.Areas.User.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            // 1. Lấy ID của người dùng đang đăng nhập hiện tại
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
             if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
 
-            // 2. CHÌA KHÓA Ở ĐÂY: Thay vì dùng GetAllAsync(), 
-            // chúng ta dùng GetUserDocumentsAsync để chỉ lấy đúng đồ của mình.
             var dtoList = await _documentService.GetUserDocumentsAsync(currentUserId);
-            
-            // 3. Map sang ViewModel để hiển thị lên View
             var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
 
             return View(viewModels);
@@ -60,7 +65,7 @@ namespace StudyShare.Areas.User.Controllers
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryService.GetAllAsync();
-            ViewBag.CategoryId = new SelectList(categories, "Id", "Name");
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
             return View();
         }
 
@@ -71,7 +76,7 @@ namespace StudyShare.Areas.User.Controllers
             if (!ModelState.IsValid)
             {
                 var categories = await _categoryService.GetAllAsync();
-                ViewBag.CategoryId = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
+                ViewBag.Categories = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
                 return View(viewModel);
             }
 
@@ -79,7 +84,6 @@ namespace StudyShare.Areas.User.Controllers
             
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             await _documentService.CreateAsync(request, currentUserId);
-            // await _userService.AddPointsAsync(currentUserId, 10);
             
             TempData["Success"] = "Tải lên thành công! Tài liệu đang chờ duyệt.";
             return RedirectToAction(nameof(Index));
@@ -87,14 +91,14 @@ namespace StudyShare.Areas.User.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
-        {var requestDto = await _documentService.GetForEditAsync(id);
+        {
+            var requestDto = await _documentService.GetForEditAsync(id);
             if (requestDto == null) return NotFound();
 
-            // Map DTO -> ViewModel để hiển thị lên UI
             var viewModel = _mapper.Map<DocumentEditViewModel>(requestDto);
 
             var categories = await _categoryService.GetAllAsync();
-            ViewBag.CategoryId = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
+            ViewBag.Categories = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
 
             var existingDocument = await _documentService.GetByIdAsync(id);
             ViewBag.CurrentFileName = existingDocument?.FileName ?? "Không có tệp";
@@ -109,7 +113,8 @@ namespace StudyShare.Areas.User.Controllers
             if (!ModelState.IsValid)
             {
                 var categories = await _categoryService.GetAllAsync();
-                ViewBag.CategoryId = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
+                ViewBag.Categories = new SelectList(categories, "Id", "Name", viewModel.CategoryId);
+                
                 var existingDocument = await _documentService.GetByIdAsync(viewModel.Id);
                 ViewBag.CurrentFileName = existingDocument?.FileName ?? "Không có tệp";
                 return View(viewModel);
@@ -127,13 +132,12 @@ namespace StudyShare.Areas.User.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Đã thêm HttpPost và ValidateAntiForgeryToken để bảo mật việc xóa
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin"); // Check quyền Admin (Nếu project của bạn dùng role khác như "SuperAdmin" thì nhớ đổi lại)
+            bool isAdmin = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
 
             var success = await _documentService.DeleteAsync(id, currentUserId, isAdmin);
 
@@ -146,43 +150,34 @@ namespace StudyShare.Areas.User.Controllers
             TempData["Success"] = "Xóa tài liệu thành công. Điểm của bạn đã được cập nhật!";
             return RedirectToAction(nameof(Index));
         }
+
         [HttpGet]
         public async Task<IActionResult> Download(int id)
         {
-            // Fix lỗi _userManager: Dùng ClaimTypes để lấy UserId trực tiếp từ User
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(currentUserId)) return Challenge();
 
-            // 1. Fix lỗi GetDocumentByIdAsync và GetUserByIdAsync: Sử dụng đúng tên hàm trong Interface
             var document = await _documentService.GetByIdAsync(id);
             var user = await _userService.GetUserProfileAsync(currentUserId);
 
             if (document == null || user == null) return NotFound("Không tìm thấy tài liệu hoặc người dùng.");
 
-            // 2. Kiểm tra điều kiện tải (Tốn 10 điểm)
             int downloadCost = 10;
-            
-            // Fix lỗi Null Reference: Dùng document.UserId so sánh với currentUserId thay vì User.Identity.Name
             bool isFree = User.IsInRole("Admin") || document.UserId == currentUserId;
 
             if (!isFree)
             {
-                // Lưu ý: Đảm bảo thuộc tính điểm trong model AppUser của bạn là Point hoặc Points
                 if (user.Points < downloadCost) 
                 {
                     TempData["Error"] = $"Bạn không đủ điểm để tải tài liệu này (Cần {downloadCost} điểm, bạn đang có {user.Points} điểm).";
                     return RedirectToAction("Details", new { id = id });
                 }
 
-                // 3. Fix lỗi UpdateUserAsync: Sử dụng đúng hàm PenalizeUserAsync có sẵn để trừ điểm
                 await _userService.PenalizeUserAsync(currentUserId, downloadCost, 0);
             }
 
-            // 4. Fix lỗi UpdateDocumentAsync: Sử dụng đúng hàm IncreaseDownloadCountAsync có sẵn
             await _documentService.IncreaseDownloadCountAsync(id);
 
-            // 5. Trả về file vật lý
-            // Dùng TrimStart('/') để tránh lỗi ghép sai đường dẫn Path.Combine
             var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, document.FilePath.TrimStart('/'));
             
             if (!System.IO.File.Exists(physicalPath))
@@ -193,9 +188,83 @@ namespace StudyShare.Areas.User.Controllers
 
             byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
             
-            // Nếu document.FileType rỗng thì dùng octet-stream làm mặc định
             string fileType = !string.IsNullOrEmpty(document.FileType) ? document.FileType : "application/octet-stream";
             return File(fileBytes, fileType, document.FileName);
+        }
+// redirect ve mydocuments sau khi xoa de nguoi dung de dang quan ly tai lieu cua minh hon, thay vi redirect ve index co the co nhieu tai lieu khac cua nguoi dung khac
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteDocument(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            var success = await _documentService.DeleteAsync(id, userId, false);
+            if (success) TempData["Success"] = "Tài liệu của bạn đã được xóa vĩnh viễn.";
+            else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
+            
+            return RedirectToAction(nameof(MyDocuments));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyDocuments()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            var dtoList = await _documentService.GetUserDocumentsAsync(userId);
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
+            
+            return View(viewModels);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveDocument(int docId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var success = await _userService.SaveDocumentAsync(userId, docId);
+            if (success) TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
+            
+            return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnsaveDocument(int docId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var success = await _userService.UnsaveDocumentAsync(userId, docId);
+            if (success) TempData["Success"] = "Đã bỏ lưu tài liệu.";
+
+            string returnUrl = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("SavedDocuments"))
+            {
+                return RedirectToAction(nameof(SavedDocuments));
+            }
+            return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SavedDocuments()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+            
+            var savedDocsList = await _userService.GetSavedDocumentsAsync(userId);
+            
+            var documents = savedDocsList.Select(s => s.Document).ToList();
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documents);
+            
+            return View(viewModels);
         }
     }
 }

@@ -170,28 +170,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL0VkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/mac/Documents/Web/Areas/User/Views/User/MyDocuments.cshtml]
-build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL015RG9jdW1lbnRzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/mac/Documents/Web/Areas/User/Views/User/MyQuestions.cshtml]
-build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL015UXVlc3Rpb25zLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [/Users/mac/Documents/Web/Areas/User/Views/User/MyViolations.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL015VmlvbGF0aW9ucy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mac/Documents/Web/Areas/User/Views/User/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL1Byb2ZpbGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/mac/Documents/Web/Areas/User/Views/User/SavedDocuments.cshtml]
-build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL1NhdmVkRG9jdW1lbnRzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/mac/Documents/Web/Areas/User/Views/User/_UserSidebarPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = QXJlYXMvVXNlci9WaWV3cy9Vc2VyL19Vc2VyU2lkZWJhclBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mac/Documents/Web/Areas/User/Views/_ViewImports.cshtml]

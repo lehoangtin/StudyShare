@@ -136,5 +136,10 @@ namespace StudyShare.Services.Implementations
             var answers = await _answerRepository.GetByUserIdAsync(userId);
             return _mapper.Map<IEnumerable<AnswerResponse>>(answers);
         }
+        public async Task<StudyShare.DTOs.Responses.AnswerResponse> GetByIdAsync(int id)
+{
+    var answer = await _answerRepository.GetByIdAsync(id);
+    return _mapper.Map<AnswerResponse>(answer);
+}
     }
 }

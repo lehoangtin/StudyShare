@@ -31,38 +31,38 @@ namespace StudyShare.Controllers
             _mapper = mapper;
         }
 
-public async Task<IActionResult> Index(int? categoryId, string? searchTerm)
-{
-    // 1. Lấy danh sách danh mục để hiển thị ở Sidebar
-    var categories = await _categoryService.GetAllAsync();
-    ViewBag.Categories = categories;
-    ViewBag.CurrentCategory = categoryId;
-    ViewBag.SearchTerm = searchTerm;
+        public async Task<IActionResult> Index(int? categoryId, string? searchTerm)
+        {
+            // 1. Lấy danh sách danh mục để hiển thị ở Sidebar
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = categories;
+            ViewBag.CurrentCategory = categoryId;
+            ViewBag.SearchTerm = searchTerm;
 
-    // 2. Lấy tất cả tài liệu đã duyệt
-    var documentsDto = await _documentService.GetAllApprovedAsync(); 
-    
-    // 3. Lọc theo Danh mục (CategoryId) nếu người dùng có bấm chọn
-    if (categoryId.HasValue && categoryId.Value > 0)
-    {
-        documentsDto = documentsDto.Where(d => d.CategoryId == categoryId.Value).ToList();
-    }
+            // 2. Lấy tất cả tài liệu đã duyệt
+            var documentsDto = await _documentService.GetAllApprovedAsync(); 
+            
+            // 3. Lọc theo Danh mục (CategoryId) nếu người dùng có bấm chọn
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                documentsDto = documentsDto.Where(d => d.CategoryId == categoryId.Value).ToList();
+            }
 
-    // 4. Lọc theo Từ khóa tìm kiếm nếu người dùng có nhập
-    if (!string.IsNullOrWhiteSpace(searchTerm))
-    {
-        var term = searchTerm.ToLower().Trim();
-        documentsDto = documentsDto.Where(d => 
-            d.Title.ToLower().Contains(term) || 
-            (d.Description != null && d.Description.ToLower().Contains(term))
-        ).ToList();
-    }
+            // 4. Lọc theo Từ khóa tìm kiếm nếu người dùng có nhập
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.ToLower().Trim();
+                documentsDto = documentsDto.Where(d => 
+                    d.Title.ToLower().Contains(term) || 
+                    (d.Description != null && d.Description.ToLower().Contains(term))
+                ).ToList();
+            }
 
-    // 5. Map sang ViewModel và trả về giao diện
-    var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documentsDto);
+            // 5. Map sang ViewModel và trả về giao diện
+            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documentsDto);
 
-    return View(viewModels); 
-}
+            return View(viewModels); 
+        }
 
 
         [Authorize] 

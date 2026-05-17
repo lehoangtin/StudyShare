@@ -134,129 +134,27 @@ namespace StudyShare.Areas.User.Controllers
             return RedirectToAction("Profile", new { id = user.Id });
         }
 
-        public async Task<IActionResult> MyQuestions()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            
-            // Lấy qua Service và map qua ViewModel
-            var dtoList = await _questionService.GetUserQuestionsAsync(userId); 
-            var viewModels = _mapper.Map<IEnumerable<QuestionViewModel>>(dtoList);
-            
-            return View(viewModels);
-        }
 
-       [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> DeleteQuestion(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            // SỬA Ở ĐÂY: Đổi thành DeleteAsync và truyền 'false' cho isAdmin
-            var success = await _questionService.DeleteAsync(id, userId, false);
-            
-            if (success) TempData["Success"] = "Đã xóa thảo luận và các dữ liệu liên quan thành công.";
-            else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
-            
-            return RedirectToAction(nameof(MyQuestions));
-        }
 
-        public async Task<IActionResult> MyDocuments()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            
-            var dtoList = await _documentService.GetUserDocumentsAsync(userId);
-            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(dtoList);
-            
-            return View(viewModels);
-        }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> DeleteDocument(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            // bool isAdmin = User.IsInRole("Admin");
-            var success = await _documentService.DeleteAsync(id, userId, false);  //
-            if (success) TempData["Success"] = "Tài liệu của bạn đã được xóa vĩnh viễn.";
-            else TempData["Error"] = "Có lỗi xảy ra hoặc bạn không có quyền xóa.";
+        // [HttpPost]
+        // [Authorize]
+        // [ValidateAntiForgeryToken]
+        // public async Task<IActionResult> DeleteAnswer(int id)
+        // {
+        //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //     if (string.IsNullOrEmpty(userId)) return Unauthorized();
             
-            return RedirectToAction(nameof(MyDocuments));
-        }
+        //     // SỬA Ở ĐÂY: Đổi thành DeleteAsync và truyền 'false' cho isAdmin
+        //     var success = await _answerService.DeleteAsync(id, userId, false);
 
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveDocument(int docId)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        //     if (!success) TempData["Error"] = "Bạn không có quyền xoá hoặc nội dung không tồn tại.";
+        //     else TempData["Success"] = "Đã xoá câu trả lời.";
 
-            var success = await _userService.SaveDocumentAsync(userId, docId);
-            if (success) TempData["Success"] = "Đã lưu tài liệu vào danh sách của bạn!";
-            
-            return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
-        }
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UnsaveDocument(int docId)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            var success = await _userService.UnsaveDocumentAsync(userId, docId);
-            if (success) TempData["Success"] = "Đã bỏ lưu tài liệu.";
-
-            string returnUrl = Request.Headers["Referer"].ToString();
-            if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("SavedDocuments"))
-            {
-                return RedirectToAction(nameof(SavedDocuments));
-            }
-            return RedirectToAction("ViewDocument", "Home", new { area = "", id = docId });
-        }
-
-        public async Task<IActionResult> SavedDocuments()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
-            
-            var savedDocsList = await _userService.GetSavedDocumentsAsync(userId);
-            
-            // Trích xuất Document ra để map
-            var documents = savedDocsList.Select(s => s.Document).ToList();
-            var viewModels = _mapper.Map<IEnumerable<DocumentViewModel>>(documents);
-            
-            return View(viewModels);
-        }
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAnswer(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-            
-            // SỬA Ở ĐÂY: Đổi thành DeleteAsync và truyền 'false' cho isAdmin
-            var success = await _answerService.DeleteAsync(id, userId, false);
-
-            if (!success) TempData["Error"] = "Bạn không có quyền xoá hoặc nội dung không tồn tại.";
-            else TempData["Success"] = "Đã xoá câu trả lời.";
-
-            string returnUrl = Request.Headers["Referer"].ToString();
-            return string.IsNullOrEmpty(returnUrl) ? RedirectToAction("Index", "Home") : Redirect(returnUrl);
-        }
+        //     string returnUrl = Request.Headers["Referer"].ToString();
+        //     return string.IsNullOrEmpty(returnUrl) ? RedirectToAction("Index", "Home") : Redirect(returnUrl);
+        // }
         [Authorize]
         public async Task<IActionResult> MyViolations()
         {

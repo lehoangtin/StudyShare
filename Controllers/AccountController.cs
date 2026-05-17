@@ -35,9 +35,6 @@ namespace StudyShare.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                // 🔥 KIỂM TRA SỐ LẦN VI PHẠM TRƯỚC KHI ĐĂNG NHẬP
-                // Lưu ý: Nếu trong LoginViewModel của bạn dùng trường UserName thay vì Email để đăng nhập, 
-                // thì bạn đổi model.Email thành model.UserName nhé.
                 var user = await _authService.GetUserByEmailAsync(model.Email); 
                 
                 if (user != null && user.WarningCount >= 3)
@@ -46,7 +43,6 @@ namespace StudyShare.Controllers
                     return View(model);
                 }
 
-                // Nếu an toàn (chưa tới 3 lần) thì cho phép đăng nhập bình thường
                 var result = await _authService.LoginAsync(model);
                 
                 if (result.Succeeded)
@@ -56,10 +52,16 @@ namespace StudyShare.Controllers
                         : RedirectToAction("Index", "Home");
                 }
                 
-                // Kiểm tra khóa tài khoản (Lockout) do nhập sai pass nhiều lần
                 if (result.IsLockedOut)
                 {
-                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn đã bị khóa tạm thời do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
+                    ModelState.AddModelError(string.Empty, "Tài khoản bị khóa tạm thời do nhập sai nhiều lần. Vui lòng thử lại sau 5 phút.");
+                    return View(model);
+                }
+
+                // 🔥 THÊM ĐOẠN NÀY ĐỂ BẮT LỖI CHƯA XÁC NHẬN EMAIL
+                if (result.IsNotAllowed)
+                {
+                    ModelState.AddModelError(string.Empty, "Tài khoản của bạn chưa được xác nhận. Vui lòng kiểm tra Email để kích hoạt tài khoản trước khi đăng nhập!");
                     return View(model);
                 }
                 
@@ -132,16 +134,35 @@ namespace StudyShare.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _authService.GetUserByEmailAsync(model.Email);
-                if (user == null || !(await _authService.IsEmailConfirmedAsync(user)))
+                
+                // 1. Chỉ cần user khác null là gửi mail. Bỏ điều kiện IsEmailConfirmedAsync đi để test dễ hơn
+                if (user != null) 
                 {
-                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                    // 2. Tạo mã token
+                    var code = await _authService.GeneratePasswordResetTokenAsync(user);
+                    
+                    // 3. SỬA LỖI Ở ĐÂY: Phải truyền cả 'email' và 'code' (chứ không phải 'token') 
+                    // để khớp với hàm ResetPassword(string email, string code) của Identity
+                    var callbackUrl = Url.Action("ResetPassword", "Account", 
+                        new { email = model.Email, code = code }, 
+                        protocol: HttpContext.Request.Scheme);
+
+                    // 4. HTML làm đẹp cho Email
+                    string htmlMessage = $@"
+                        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                            <h2 style='color: #2563eb;'>StudyShare</h2>
+                            <h3>Khôi phục mật khẩu</h3>
+                            <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản {model.Email}.</p>
+                            <p>Vui lòng click vào nút bên dưới để tiến hành thiết lập mật khẩu mới:</p>
+                            <a href='{callbackUrl}' style='display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0;'>ĐẶT LẠI MẬT KHẨU</a>
+                            <p style='color: #6b7280; font-size: 0.9em;'>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.</p>
+                        </div>";
+
+                    // 5. Ra lệnh gửi mail
+                    await _emailSender.SendEmailAsync(model.Email, "Khôi phục mật khẩu - StudyShare", htmlMessage);
                 }
 
-                var code = await _authService.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.Action("ResetPassword", "Account", new { code = code }, protocol: HttpContext.Request.Scheme);
-
-                await _emailSender.SendEmailAsync(model.Email, "Đặt lại mật khẩu", $"Vui lòng đặt lại mật khẩu của bạn bằng cách <a href='{callbackUrl}'>nhấn vào đây</a>.");
-
+                // Báo thành công (Dù email có thật hay không để bảo mật)
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
             return View(model);
@@ -151,9 +172,21 @@ namespace StudyShare.Controllers
         public IActionResult ForgotPasswordConfirmation() => View();
 
         [HttpGet]
-        public IActionResult ResetPassword(string? code = null) 
+        // Bổ sung thêm tham số email
+        public IActionResult ResetPassword(string? email = null, string? code = null) 
         {
-            return code == null ? BadRequest("Cần có mã Token để đổi mật khẩu.") : View();
+            if (code == null || email == null)
+            {
+                return BadRequest("Cần có mã Token và Email hợp lệ để đổi mật khẩu.");
+            }
+            
+            // Khởi tạo model và gán sẵn Email, Token (code) vào để truyền xuống giao diện
+            var model = new ResetPasswordViewModel 
+            { 
+                Email = email, 
+                Token = code 
+            };
+            return View(model);
         }
 
         [HttpPost]

@@ -21,9 +21,20 @@ namespace StudyShare.Services.Implementations
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
         {
-            return await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-        }
+            // 1. Tìm User bằng Email trước
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            
+            // Nếu không thấy user, trả về Failed luôn
+            if (user == null) return SignInResult.Failed;
 
+            // 2. DÙNG USERNAME CỦA USER ĐÓ ĐỂ ĐĂNG NHẬP (Tuyệt đối không truyền trực tiếp model.Email vào đây)
+            return await _signInManager.PasswordSignInAsync(
+                user.UserName, // <--- Quan trọng nhất ở đây
+                model.Password, 
+                model.RememberMe, 
+                lockoutOnFailure: true
+            );
+        }
         public async Task<IdentityResult> RegisterAsync(RegisterViewModel model)
         {
             var user = new AppUser
