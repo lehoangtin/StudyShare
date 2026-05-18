@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Xác thực thành công";
+}
+
+<style>
+    .login-container { min-height: calc(100vh - 150px); display: flex; align-items: center; }
+    .bg-glass { background: rgba(16, 185, 129, 0.85); backdrop-filter: blur(10px); } /* Màu xanh lá cho thành công */
+    .btn-login { transition: all 0.3s; background: linear-gradient(135deg, #10b981, #059669); border: none; color: white; }
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); color: white; }
+</style>
+
+<div class="container login-container py-5">
+    <div class="card shadow-lg border-0 rounded-5 overflow-hidden w-100" style="max-width: 1000px; margin: 0 auto;">
+        <div class="row g-0 h-100">
+            <div class="col-lg-6 d-none d-lg-block position-relative" style="background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1000&auto=format&fit=crop') center/cover;">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-glass d-flex flex-column justify-content-center align-items-center text-center p-5">
+                    <i class="bi bi-patch-check text-white mb-3" style="font-size: 4rem;"></i>
+                    <h2 class="fw-bold text-white mb-3" style="font-family: 'Outfit', sans-serif;">Chào mừng bạn!</h2>
+                    <p class="text-white-50 fs-5">Tài khoản của bạn đã được kích hoạt hoàn toàn. Hãy bắt đầu hành trình chia sẻ tri thức tại StudyShare.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-6 bg-white p-5 p-lg-5 d-flex flex-column justify-content-center text-center">
+                <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 5rem;"></i>
+                <h3 class="fw-bold text-dark mb-3">Tuyệt vời! 🎉</h3>
+                <p class="text-muted mb-4" style="font-size: 1.1rem; line-height: 1.6;">
+                    Email của bạn đã được xác nhận thành công. Bây giờ bạn đã trở thành một phần chính thức của cộng đồng chúng tôi.
+                </p>
+
+                <a asp-action="Login" class="btn btn-login w-100 rounded-pill py-3 fw-bold text-uppercase">
+                    Đăng Nhập Ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

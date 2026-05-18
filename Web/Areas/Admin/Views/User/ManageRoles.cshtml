@@ -1,0 +1,108 @@
+@using System.Security.Claims
+@model IEnumerable<StudyShare.ViewModels.UserViewModel>
+@{
+    ViewData["Title"] = "Quản lý quyền hạn";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container-fluid py-4"  min-height: 100vh;">
+    <div class="row g-4">
+        
+        <div class="col-xl-3 col-lg-4">
+            @await Html.PartialAsync("_AdminSidebarPartial")
+        </div>
+
+        <div class="col-xl-9 col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
+                <div class="card-header bg-white p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom">
+                    <div>
+                        <h4 class="fw-bold text-dark mb-1"><i class="bi bi-key-fill text-warning me-2"></i>Phân quyền hệ thống</h4>
+                        <p class="text-muted small mb-0">Chỉ Super Admin mới có quyền nâng cấp hoặc hạ bậc nhân sự.</p>
+                    </div>
+                    <a asp-action="Index" class="btn btn-white border rounded-pill px-4 shadow-sm fw-medium mt-3 mt-md-0 hover-lift">
+                        <i class="bi bi-arrow-left me-2"></i> Trở về
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4 py-3 text-uppercase text-muted small fw-bold">Thành viên</th>
+                                <th class="py-3 text-uppercase text-muted small fw-bold text-center">Cấp bậc hiện tại</th>
+                                <th class="pe-4 py-3 text-uppercase text-muted small fw-bold text-center">Hành động thiết lập</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                bool isMe = user.Id == currentUserId;
+                                bool isSuperAdmin = user.Role == "SuperAdmin";
+                                
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <img src="@(string.IsNullOrEmpty(user.Avatar) ? "/images/default-avatar.png" : user.Avatar)" 
+                                                 class="rounded-circle object-fit-cover shadow-sm border border-2 border-white me-3" width="45" height="45">
+                                            <div>
+                                                <h6 class="mb-0 fw-bold text-dark fs-6">@user.FullName</h6>
+                                                <small class="text-muted">@user.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center py-3">
+                                        @if (isSuperAdmin) {
+                                            <span class="badge bg-dark rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-star-fill text-warning me-1"></i> Super Admin</span>
+                                        } else if (user.Role == "Admin") {
+                                            <span class="badge bg-primary rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-shield-lock-fill me-1"></i> Admin</span>
+                                        } else {
+                                            <span class="badge bg-light text-secondary border rounded-pill px-3 py-2"><i class="bi bi-person me-1"></i> User</span>
+                                        }
+                                    </td>
+                                    <td class="pe-4 py-3 text-center">
+                                        @if (!isMe && !isSuperAdmin)
+                                        {
+                                            <div class="d-flex justify-content-center gap-2">
+                                                @if (user.Role != "Admin")
+                                                {
+                                                    <form asp-action="ChangeRole" asp-route-userId="@user.Id" asp-route-role="Admin" method="post" class="m-0">
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm" title="Nâng cấp lên Admin">
+                                                            <i class="bi bi-arrow-up-circle-fill me-1"></i> Lên Admin
+                                                        </button>
+                                                    </form>
+                                                }
+                                                @if (user.Role != "User")
+                                                {
+                                                    <form asp-action="ChangeRole" asp-route-userId="@user.Id" asp-route-role="User" method="post" class="m-0">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold shadow-sm" title="Hạ xuống User">
+                                                            <i class="bi bi-arrow-down-circle-fill me-1"></i> Giáng cấp
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+                                        else if (isMe)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2 shadow-sm">Tài khoản của bạn</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small"><i class="bi bi-lock-fill me-1"></i> System Locked</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-white { background: white; color: #495057; }
+    .btn-white:hover { background: #f8f9fa; color: #212529; }
+    .hover-lift { transition: transform 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+</style>

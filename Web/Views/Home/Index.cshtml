@@ -1,0 +1,132 @@
+@model IEnumerable<StudyShare.ViewModels.DocumentViewModel>
+@{
+    ViewData["Title"] = "Thư viện chung";
+    var categories = ViewBag.Categories as IEnumerable<StudyShare.DTOs.Responses.CategoryResponse>;
+    int? currentCatId = ViewBag.CurrentCategory as int?;
+}
+
+<div class="container mt-4 mb-5">
+    
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-5 gap-4">
+        <div>
+            <h1 class="text-uppercase mb-1" style="font-weight: 900; letter-spacing: -0.5px; font-size: 2.5rem;">
+                <i class="bi bi-bookmarks-fill me-2" style="color: #2563eb;"></i>
+                <span class="text-gradient">THƯ VIỆN TÀI LIỆU</span>
+            </h1>
+            <p class="text-muted fw-semibold mb-0" style="letter-spacing: 0.5px;">
+                HỆ THỐNG CHIA SẺ KIẾN THỨC CỘNG ĐỒNG STUDYSHARE
+            </p>
+        </div>
+
+        <form asp-action="Index" method="get" class="flex-grow-1" style="max-width: 500px;">
+            <div class="search-pill d-flex bg-white p-1 rounded-pill shadow-sm align-items-center">
+                <input type="hidden" name="categoryId" value="@currentCatId" />
+                
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" 
+                       class="form-control border-0 bg-transparent shadow-none py-2 ps-4" 
+                       placeholder="Nhập tên tài liệu cần tìm..." style="font-weight: 500;" />
+                       
+                <button type="submit" class="btn text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                        style="background-color: #2563eb; width: 44px; height: 44px; flex-shrink: 0; margin-right: 2px;">
+                    <i class="bi bi-search" style="font-weight: 800; font-size: 1.1rem;"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        
+        <div class="col-lg-3 mb-4">
+            <div class="position-sticky" style="top: 100px; z-index: 10;"> 
+                <h5 class="fw-bold mb-3" style="color: #1e293b;">
+                    <i class="bi bi-filter-left text-primary border rounded p-1 bg-white shadow-sm me-1"></i> Danh mục
+                </h5>
+                
+                <div class="list-group shadow-sm rounded-4 overflow-hidden border-0">
+                    <a asp-action="Index" asp-route-searchTerm="@ViewBag.SearchTerm"
+                       class="list-group-item list-group-item-action py-3 border-0 border-bottom @(currentCatId == null ? "active fw-bold" : "text-muted")"
+                       style="@(currentCatId == null ? "background-color: #2563eb; color: white;" : "")">
+                        <i class="bi bi-grid-fill me-2"></i> Tất cả tài liệu
+                    </a>
+
+                    @if (categories != null)
+                    {
+                        @foreach (var cat in categories)
+                        {
+                            <a asp-action="Index" 
+                               asp-route-categoryId="@cat.Id" 
+                               asp-route-searchTerm="@ViewBag.SearchTerm"
+                               class="list-group-item list-group-item-action py-3 border-0 border-bottom @(currentCatId == cat.Id ? "active fw-bold" : "text-muted")"
+                               style="@(currentCatId == cat.Id ? "background-color: #2563eb; color: white;" : "")">
+                                <i class="bi bi-folder2-open me-2"></i> @cat.Name
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="d-flex flex-column gap-3">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div class="card card-ss border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="row g-0 align-items-center h-100">
+                                <div class="col-auto d-none d-sm-flex align-items-center justify-content-center bg-light border-end" style="width: 130px; align-self: stretch;">
+                                    <i class="bi bi-file-earmark-text-fill" style="font-size: 3.5rem; color: #2563eb;"></i>
+                                </div>
+                                
+                                <div class="col">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                            
+                                            <div style="flex: 1;">
+                                                <span class="badge mb-2 px-3 py-1 rounded-pill fw-bold" style="background-color: #dbeafe; color: #2563eb; font-size: 0.75rem;">
+                                                    @item.CategoryName
+                                                </span>
+                                                
+                                                <h5 class="fw-bold text-dark mb-2" style="font-size: 1.25rem;">@item.Title</h5>
+                                                
+                                                <div class="d-flex flex-wrap gap-4 mt-2">
+                                                    <div class="d-flex align-items-center text-muted small">
+                                                        <i class="bi bi-person-circle me-2 fs-5"></i> 
+                                                        <span>Đăng bởi: <strong class="text-dark">@item.AuthorName</strong></span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center text-muted small">
+                                                        <i class="bi bi-calendar3 me-2 fs-6"></i> 
+                                                        <span>@item.UploadDate.ToString("dd/MM/yyyy")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="text-md-end mt-3 mt-md-0">
+                                                <a asp-action="ViewDocument" asp-route-id="@item.Id" 
+                                                   class="btn btn-view-detail rounded-pill fw-bold px-4 py-2" 
+                                                   style="white-space: nowrap;">
+                                                    Xem chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm" style="border: 2px dashed #cbd5e1;">
+                        <i class="bi bi-search text-muted opacity-50" style="font-size: 4rem;"></i>
+                        <h4 class="mt-4 fw-bold" style="color: #0f172a;">Không tìm thấy tài liệu</h4>
+                        <p class="text-muted">Không có tài liệu nào khớp với từ khóa hoặc danh mục bạn chọn.</p>
+                        <a asp-action="Index" class="btn text-white rounded-pill px-4 mt-2 fw-bold shadow-sm" style="background-color: #2563eb;">
+                            Xóa bộ lọc
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+        </div>
+</div>

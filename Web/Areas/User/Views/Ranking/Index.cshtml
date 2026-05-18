@@ -1,0 +1,165 @@
+@model IEnumerable<StudyShare.DTOs.Responses.UserResponse>
+@{
+    ViewData["Title"] = "Bảng Vàng Thành Tích";
+    int rank = 1; 
+}
+
+<style>
+    /* CSS Tùy chỉnh cho Bảng Vàng */
+    .leaderboard-card { border-radius: 1.5rem; border: none; }
+    .leaderboard-header { 
+        background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); 
+        border-radius: 1.5rem 1.5rem 0 0;
+    }
+    .rank-row { transition: all 0.3s ease; border-bottom: 1px solid #f1f5f9; }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-row:hover { 
+        transform: translateX(8px) scale(1.01); 
+        background-color: #ffffff !important; 
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+        z-index: 10;
+        position: relative;
+        border-radius: 1rem;
+    }
+    
+    /* Hiệu ứng Top 3 VIP */
+    .rank-1 { background-color: rgba(245, 158, 11, 0.05); border-left: 5px solid #f59e0b; }
+    .rank-2 { background-color: rgba(148, 163, 184, 0.05); border-left: 5px solid #94a3b8; }
+    .rank-3 { background-color: rgba(180, 83, 9, 0.05); border-left: 5px solid #b45309; }
+    
+    /* Huy hiệu điểm số */
+    .points-badge { font-weight: 700; padding: 0.6rem 1.2rem; border-radius: 2rem; display: inline-flex; align-items: center; justify-content: center; min-width: 100px;}
+    .points-gold { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); }
+    .points-silver { background: linear-gradient(135deg, #94a3b8, #cbd5e1); color: white; box-shadow: 0 4px 10px rgba(148, 163, 184, 0.4); }
+    .points-bronze { background: linear-gradient(135deg, #b45309, #d97706); color: white; box-shadow: 0 4px 10px rgba(180, 83, 9, 0.3); }
+    .points-normal { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Avatar */
+    .avatar-img { object-fit: cover; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+    .rank-row:hover .avatar-img { transform: scale(1.1) rotate(5deg); }
+</style>
+
+<div class="container mt-4 mb-5" style="max-width: 1000px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark m-0">
+            <i class="bi bi-trophy-fill text-warning me-2" style="filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.4));"></i> 
+            Bảng Vàng Thành Tích
+        </h3>
+    </div>
+
+    <div class="card leaderboard-card shadow-lg overflow-hidden">
+        <div class="leaderboard-header py-4 px-5 position-relative overflow-hidden">
+            <div class="position-relative z-1 d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="mb-1 fw-bold text-white text-uppercase" style="letter-spacing: 1px;">Vinh Danh Đóng Góp</h4>
+                    <p class="mb-0 text-white opacity-75 fs-6">Cảm ơn những thành viên đã tích cực xây dựng cộng đồng học tập.</p>
+                </div>
+                <i class="bi bi-stars text-white opacity-50 display-4"></i>
+            </div>
+            <i class="bi bi-award-fill position-absolute text-white opacity-25" style="font-size: 12rem; right: -30px; top: -50px; transform: rotate(15deg);"></i>
+        </div>
+        
+        <div class="card-body p-0 bg-white">
+            <div class="table-responsive" style="overflow-x: hidden;">
+                <table class="table align-middle mb-0 border-0">
+                    <thead class="bg-light text-muted fw-bold text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        <tr>
+                            <th class="text-center py-3 border-0" style="width: 15%">Xếp Hạng</th>
+                            <th class="py-3 border-0" style="width: 60%">Thành viên</th>
+                            <th class="text-center pe-4 py-3 border-0" style="width: 25%">Điểm tích lũy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var user in Model.OrderByDescending(u => u.Points))
+                            {
+                                // Xác định class màu sắc cho Top 3
+                                string rowClass = rank == 1 ? "rank-1" : rank == 2 ? "rank-2" : rank == 3 ? "rank-3" : "";
+                                string badgeClass = rank == 1 ? "points-gold" : rank == 2 ? "points-silver" : rank == 3 ? "points-bronze" : "points-normal";
+                                string avatarBorder = rank == 1 ? "border-warning" : rank == 2 ? "border-secondary" : rank == 3 ? "border-danger" : "border-light";
+                                
+                                // Lấy Avatar thật (nếu có), nếu không dùng hình mặc định của ui-avatars
+                                string avatarUrl = string.IsNullOrEmpty(user.Avatar) 
+                                    ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(user.FullName)}&background=random&color=fff&bold=true" 
+                                    : user.Avatar;
+
+                                <tr class="rank-row @rowClass">
+                                    <td class="text-center py-4">
+                                        @if (rank == 1)
+                                        {
+                                            <div class="position-relative d-inline-block">
+                                                <i class="bi bi-trophy-fill text-warning display-6" style="filter: drop-shadow(0 4px 6px rgba(245, 158, 11, 0.4));"></i>
+                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">TOP 1</span>
+                                            </div>
+                                        }
+                                        else if (rank == 2)
+                                        {
+                                            <i class="bi bi-medal-fill text-secondary display-6" style="filter: drop-shadow(0 2px 4px rgba(148, 163, 184, 0.4));"></i>
+                                        }
+                                        else if (rank == 3)
+                                        {
+                                            <i class="bi bi-medal-fill" style="color: #d97706; font-size: 2rem; filter: drop-shadow(0 2px 4px rgba(180, 83, 9, 0.3));"></i>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary fs-5 fw-bold font-monospace">#@rank</span>
+                                        }
+                                    </td>
+                                    
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-relative">
+                                                <img src="@avatarUrl" class="rounded-circle me-3 avatar-img border border-3 @avatarBorder" width="60" height="60" alt="Avatar">
+                                                @if(rank == 1) {
+                                                    <i class="bi bi-star-fill text-warning position-absolute bottom-0 end-0 translate-middle mb-1 me-1 fs-6 bg-white rounded-circle p-1 shadow-sm"></i>
+                                                }
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-1 text-dark fw-bold">@user.FullName</h5>
+                                                @if (rank == 1)
+                                                {
+                                                    <span class="badge bg-warning text-dark bg-opacity-25 border border-warning rounded-pill px-2 py-1 small">
+                                                        <i class="bi bi-fire text-danger"></i> Quán quân Đóng góp
+                                                    </span>
+                                                }
+                                                else if (rank <= 3)
+                                                {
+                                                    <span class="text-muted small"><i class="bi bi-gem text-info"></i> Thành viên ưu tú</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">Thành viên tích cực</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="text-center pe-4">
+                                        <div class="points-badge @badgeClass">
+                                            <i class="bi bi-coin me-2 fs-5"></i> 
+                                            <span class="fs-5">@user.Points</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                rank++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted border-0 bg-light">
+                                    <div class="py-5">
+                                        <i class="bi bi-trophy display-1 opacity-25 d-block mb-3 text-secondary"></i>
+                                        <h5 class="fw-bold">Chưa có dữ liệu</h5>
+                                        <p>Bảng xếp hạng sẽ cập nhật khi có thành viên đóng góp.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
