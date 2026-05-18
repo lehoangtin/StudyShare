@@ -1,0 +1,38 @@
+
+services:
+  # 1. Cấu hình SQL Server
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Password123" # Khớp với appsettings.json của bạn
+    ports:
+      - "1434:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  # 2. Cấu hình .NET Web App
+  # 2. Cấu hình .NET Web App
+  web:
+    build:
+      context: ./Web 
+      dockerfile: Dockerfile
+    ports:
+      # SỬA 80 THÀNH 8080 Ở ĐÂY:
+      - "8080:8080" 
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__PBL3ConnectionString=Server=db,1433;Database=PBL3;User ID=SA;Password=Password123;TrustServerCertificate=True
+  # 3. Cấu hình AI Service (Python)
+  aiservice:
+    build:
+      context: ./Ai
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./Ai/.env
+
+volumes:
+  sql_data:
