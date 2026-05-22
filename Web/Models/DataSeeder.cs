@@ -34,8 +34,14 @@ namespace StudyShare.Models
             {
                 ("superadmin@studyshare.com", "Trùm Cuối", 9999, 0, false, new[] { "SuperAdmin", "Admin" }),
                 ("admin@gmail.com", "Quản trị viên 1", 1000, 0, false, new[] { "Admin" }),
-                ("lehoangtin@gmail.com", "Lê Hoàng Tín", 500, 0, false, new[] { "Admin" }),
-                ("sinhvien1@gmail.com", "Ngô Gia Toàn", 200, 0, false, new[] { "User" }),
+                
+                // Team Dev (Cấp point cao và quyền Admin để test)
+                ("lehoangtin@gmail.com", "Lê Hoàng Tín", 500, 0, false, new[] { "Admin", "User" }),
+                ("ngogiatoan@gmail.com", "Ngô Gia Toàn", 500, 0, false, new[] { "Admin", "User" }),
+                ("minh@gmail.com", "Minh", 500, 0, false, new[] { "Admin", "User" }),
+                ("duong@gmail.com", "Dương", 500, 0, false, new[] { "Admin", "User" }),
+
+                // Các User phục vụ test Case đặc biệt
                 ("sinhvien2@gmail.com", "Sinh Viên Chăm Chỉ 2", 200, 0, false, new[] { "User" }),
                 ("vipham@gmail.com", "User Bị 3 Gậy", 0, 3, false, new[] { "User" }), 
                 ("banned@gmail.com", "User Bị Khóa", -50, 5, true, new[] { "User" })   
@@ -55,10 +61,10 @@ namespace StudyShare.Models
                         Points = u.Points,
                         WarningCount = u.Warnings,
                         IsBanned = u.IsBanned,
-                        CreatedAt = DateTime.Now // Thêm trường thời gian tạo
+                        CreatedAt = DateTime.Now 
                     };
                     
-                    var result = await userManager.CreateAsync(user, "User@123");
+                    var result = await userManager.CreateAsync(user, "User@123"); // Pass chung cho tiện test
                     if (result.Succeeded)
                     {
                         foreach (var r in u.Roles)
@@ -70,9 +76,10 @@ namespace StudyShare.Models
             }
 
             // ==============================================================
-            // 3. KHỞI TẠO THÊM 15 SINH VIÊN (CHO CÓ DATA ĐỂ TEST)
+            // 3. KHỞI TẠO THÊM 50 SINH VIÊN (CHO CÓ DATA ĐỂ TEST PHÂN TRANG)
             // ==============================================================
-            for (int i = 3; i <= 17; i++)
+            var random = new Random();
+            for (int i = 1; i <= 50; i++)
             {
                 string email = $"student{i}@gmail.com";
                 if (await userManager.FindByEmailAsync(email) == null)
@@ -83,8 +90,9 @@ namespace StudyShare.Models
                         Email = email, 
                         FullName = $"Sinh Viên Thứ {i}", 
                         EmailConfirmed = true,
-                        Points = new Random().Next(10, 300), // Cho điểm ngẫu nhiên
-                        CreatedAt = DateTime.Now
+                        Points = random.Next(10, 500), // Random điểm từ 10 đến 500
+                        // Random ngày tạo trong vòng 30 ngày qua để test sort/filter
+                        CreatedAt = DateTime.Now.AddDays(-random.Next(1, 30)) 
                     };
                     
                     var result = await userManager.CreateAsync(user, "User@123");

@@ -151,46 +151,57 @@ namespace StudyShare.Areas.User.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Download(int id)
+[HttpGet]
+public async Task<IActionResult> Download(int id)
+{
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(currentUserId)) return Challenge();
+
+    var document = await _documentService.GetByIdAsync(id);
+    var user = await _userService.GetUserProfileAsync(currentUserId);
+
+    if (document == null || user == null) return NotFound("Không tìm thấy tài liệu hoặc người dùng.");
+
+    int downloadCost = 10;
+    bool isFree = User.IsInRole("Admin") || document.UserId == currentUserId;
+
+    if (!isFree)
+    {
+        if (user.Points < downloadCost) 
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId)) return Challenge();
-
-            var document = await _documentService.GetByIdAsync(id);
-            var user = await _userService.GetUserProfileAsync(currentUserId);
-
-            if (document == null || user == null) return NotFound("Không tìm thấy tài liệu hoặc người dùng.");
-
-            int downloadCost = 10;
-            bool isFree = User.IsInRole("Admin") || document.UserId == currentUserId;
-
-            if (!isFree)
-            {
-                if (user.Points < downloadCost) 
-                {
-                    TempData["Error"] = $"Bạn không đủ điểm để tải tài liệu này (Cần {downloadCost} điểm, bạn đang có {user.Points} điểm).";
-                    return RedirectToAction("Details", new { id = id });
-                }
-
-                await _userService.PenalizeUserAsync(currentUserId, downloadCost, 0);
-            }
-
-            await _documentService.IncreaseDownloadCountAsync(id);
-
-            var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, document.FilePath.TrimStart('/'));
-            
-            if (!System.IO.File.Exists(physicalPath))
-            {
-                TempData["Error"] = "Tệp tin không tồn tại trên hệ thống.";
-                return RedirectToAction("Details", new { id = id });
-            }
-
-            byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
-            
-            string fileType = !string.IsNullOrEmpty(document.FileType) ? document.FileType : "application/octet-stream";
-            return File(fileBytes, fileType, document.FileName);
+            TempData["Error"] = $"Bạn không đủ điểm để tải tài liệu này (Cần {downloadCost} điểm, bạn đang có {user.Points} điểm).";
+            return RedirectToAction("Details", new { id = id });
         }
+
+        await _userService.PenalizeUserAsync(currentUserId, downloadCost, 0);
+    }
+
+    await _documentService.IncreaseDownloadCountAsync(id);
+
+    var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, document.FilePath.TrimStart('/'));
+    
+    if (!System.IO.File.Exists(physicalPath))
+    {
+        TempData["Error"] = "Tệp tin không tồn tại trên hệ thống.";
+        return RedirectToAction("Details", new { id = id });
+    }
+
+    byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
+    
+    // --- ĐOẠN ĐÃ SỬA LỖI MIME TYPE ---
+    // Sử dụng Provider của ASP.NET Core để tự động dịch đuôi file (.pdf, .docx) sang chuẩn MIME Type (application/pdf,...)
+    var provider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+    
+    // Kiểm tra xem hệ thống có nhận diện được đuôi file này không
+    if (!provider.TryGetContentType(document.FileName, out var contentType))
+    {
+        // Nếu đuôi file lạ, ép về kiểu mặc định để trình duyệt tự tải xuống
+        contentType = "application/octet-stream";
+    }
+
+    // Trả về file với Content-Type chuẩn (ví dụ: "application/pdf")
+    return File(fileBytes, contentType, document.FileName);
+}
 // redirect ve mydocuments sau khi xoa de nguoi dung de dang quan ly tai lieu cua minh hon, thay vi redirect ve index co the co nhieu tai lieu khac cua nguoi dung khac
         [HttpPost]
         [ValidateAntiForgeryToken]
