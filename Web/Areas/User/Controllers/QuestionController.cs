@@ -90,7 +90,7 @@ namespace StudyShare.Areas.User.Controllers
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
-                await _reportService.CreateAutoReportAsync(currentUserId, aiCheck.reason, "Hệ thống AI đã tự động chặn và xử phạt (Trừ 10 điểm, 1 gậy cảnh cáo).");
+                await _reportService.CreateAutoReportAsync(currentUserId, aiCheck.reason, "Hệ thống (AI) tự động phạt trừ 10 điểm và tăng 1 gậy cảnh cáo.", null, null, request.Content);
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
 
                 TempData["Error"] = $"Nội dung vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
@@ -136,7 +136,7 @@ namespace StudyShare.Areas.User.Controllers
             var aiCheckContent = await _aiService.CheckContentAsync(viewModel.Content);
             if (aiCheckContent.isFlagged)
             {
-                await _reportService.CreateAutoReportAsync(currentUserId, aiCheckContent.reason, "Hệ thống AI tự động chặn chỉnh sửa vi phạm (Trừ 10 điểm, 1 gậy).");
+                await _reportService.CreateAutoReportAsync(currentUserId, aiCheckContent.reason, "Hệ thống (AI) tự động phạt trừ 10 điểm và tăng 1 gậy cảnh cáo.", null, null, viewModel.Content);
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
                 
                 TempData["Error"] = $"Nội dung chỉnh sửa vi phạm: {aiCheckContent.reason}. Bạn bị trừ 10 điểm và nhận 1 gậy cảnh cáo.";
@@ -196,7 +196,7 @@ namespace StudyShare.Areas.User.Controllers
                 return RedirectToAction("Details", new { id = questionId.Value });
             }
 
-            await _reportService.CreateReportAsync(reporterId, question.UserId, reason, questionId, null);
+            await _reportService.CreateReportAsync(reporterId, question.UserId, reason, questionId, null, question.Content);
 
             TempData["Success"] = "Cảm ơn bạn! Báo cáo đã được gửi tới Quản trị viên.";
             return RedirectToAction("Details", new { id = questionId.Value });

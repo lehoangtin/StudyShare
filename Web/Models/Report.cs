@@ -39,5 +39,7 @@ namespace StudyShare.Models
         public virtual Answer Answer { get; set; }   
         public bool IsResolved { get; set; } = false; // Đánh dấu đã xử lý chưa
         public string? ActionTaken { get; set; } // Ghi chú kết quả: Đã khóa, Đã cảnh cáo, Bỏ qua...  
+        
+        public string? TargetContentSnapshot { get; set; } // Lưu lại nội dung vi phạm tại thời điểm bị báo cáo
     }
 }

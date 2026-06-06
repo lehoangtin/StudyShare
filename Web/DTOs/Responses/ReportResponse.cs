@@ -27,5 +27,6 @@ namespace StudyShare.DTOs.Responses
         public int? QuestionId { get; set; }
         public int? AnswerId { get; set; }
         public string? TargetContent { get; set; }
+        public string? TargetContentSnapshot { get; set; }
     }
 }

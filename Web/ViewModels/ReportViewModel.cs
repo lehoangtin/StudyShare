@@ -28,5 +28,6 @@ namespace StudyShare.ViewModels
         public string? ActionTaken { get; set; }
         public string TargetUserName { get; set; } = string.Empty;
         public string? TargetContent { get; set; }
+        public string? TargetContentSnapshot { get; set; }
     }
 }

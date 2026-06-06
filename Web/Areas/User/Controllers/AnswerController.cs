@@ -130,7 +130,7 @@ namespace StudyShare.Areas.User.Controllers
             var aiCheck = await _aiService.CheckContentAsync(request.Content);
             if (aiCheck.isFlagged)
             {
-                await _reportService.CreateAutoReportAsync(currentUserId, aiCheck.reason, "Hệ thống AI tự động chặn bình luận vi phạm (Trừ 10 điểm, 1 gậy).", qid: request.QuestionId);
+                await _reportService.CreateAutoReportAsync(currentUserId, aiCheck.reason, "Hệ thống AI tự động chặn bình luận vi phạm (Trừ 10 điểm, 1 gậy).", qid: request.QuestionId, targetContentSnapshot: request.Content);
                 await _userService.PenalizeUserAsync(currentUserId, 10, 1);
                 
                 TempData["Error"] = $"Bình luận vi phạm: {aiCheck.reason}. Bạn bị trừ 10 điểm.";
@@ -172,7 +172,7 @@ namespace StudyShare.Areas.User.Controllers
                 return RedirectToAction("Details", "Question", new { id = answer?.QuestionId ?? 0, area = "User" });
             }
 
-            await _reportService.CreateReportAsync(reporterId, answer.UserId, reason, null, answerId);
+            await _reportService.CreateReportAsync(reporterId, answer.UserId, reason, null, answerId, answer.Content);
 
             TempData["Success"] = "Cảm ơn bạn! Báo cáo bình luận đã được gửi tới Quản trị viên.";
             

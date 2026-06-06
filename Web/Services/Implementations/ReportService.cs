@@ -57,7 +57,7 @@ namespace StudyShare.Services.Implementations
         }
         // Thêm hàm này vào class ReportService
 // Trong ReportService.cs
-        public async Task<int> CreateAutoReportAsync(string targetUserId, string reason, string actionTaken, int? docId = null, int? qid = null)
+        public async Task<int> CreateAutoReportAsync(string targetUserId, string reason, string actionTaken, int? docId = null, int? qid = null, string? targetContentSnapshot = null)
         {
             var report = new Report
             {
@@ -68,13 +68,14 @@ namespace StudyShare.Services.Implementations
                 QuestionId = qid,
                 IsResolved = true, 
                 ActionTaken = actionTaken,
+                TargetContentSnapshot = targetContentSnapshot,
                 CreatedAt = DateTime.Now
             };
 
             var savedReport = await _reportRepository.CreateAsync(report); 
             return savedReport.Id;
         }
-        public async Task<bool> CreateReportAsync(string reporterId, string targetUserId, string reason, int? questionId = null, int? answerId = null)
+        public async Task<bool> CreateReportAsync(string reporterId, string targetUserId, string reason, int? questionId = null, int? answerId = null, string? targetContentSnapshot = null)
         {
             var report = new Report
             {
@@ -84,6 +85,7 @@ namespace StudyShare.Services.Implementations
                 QuestionId = questionId,
                 AnswerId = answerId,
                 IsResolved = false,
+                TargetContentSnapshot = targetContentSnapshot,
                 CreatedAt = DateTime.Now
             };
 

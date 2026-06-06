@@ -99,9 +99,10 @@ namespace StudyShare.Mappings
                 .ForMember(dest => dest.TargetUserId, opt => opt.MapFrom(src => 
                     src.Target != null ? src.Target.Id : null))
                 .ForMember(dest => dest.TargetContent, opt => opt.MapFrom(src => 
+                    src.TargetContentSnapshot ?? (
                     src.Answer != null ? src.Answer.Content : 
                     src.Question != null ? src.Question.Content : 
-                    src.Document != null ? src.Document.Title : null));
+                    src.Document != null ? src.Document.Title : null)));
 
             CreateMap<ReportResponse, ReportViewModel>();
 
