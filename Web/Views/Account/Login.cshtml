@@ -36,9 +36,10 @@
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
-                    <div class="form-floating mb-4">
-                        <input asp-for="Password" type="password" class="form-control rounded-4 bg-light border-0" placeholder="Mật khẩu" />
+                    <div class="form-floating mb-4 position-relative">
+                        <input asp-for="Password" type="password" class="form-control rounded-4 bg-light border-0 pe-5" placeholder="Mật khẩu" id="loginPassword" />
                         <label asp-for="Password"><i class="bi bi-lock-fill me-2 text-muted"></i>Mật khẩu</label>
+                        <i class="bi bi-eye-slash-fill position-absolute top-50 translate-middle-y end-0 me-3 text-muted" id="toggleLoginPassword" style="cursor: pointer; z-index: 10;"></i>
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
@@ -68,4 +69,13 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('toggleLoginPassword').addEventListener('click', function (e) {
+            const passwordInput = document.getElementById('loginPassword');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('bi-eye-fill');
+            this.classList.toggle('bi-eye-slash-fill');
+        });
+    </script>
 }
