@@ -14,7 +14,7 @@
                 <i class="bi bi-coin text-warning-emphasis"></i> @(user?.Points ?? 0)
             </span>
             <span class="text-dark fw-bold small mb-0">
-                Chào, @(User.Identity?.Name ?? "User")
+                Chào, @(user?.FullName ?? User.Identity?.Name ?? "User")
             </span>
         </div>
 
