@@ -74,8 +74,8 @@ namespace StudyShare.Controllers
             // Lấy User ID qua Claims
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
-            // Tăng lượt xem — chỉ tính nếu user đã đăng nhập và không phải chính tác giả
-            if (!string.IsNullOrEmpty(userId) && document.UserId != userId)
+            // Tăng lượt xem — mỗi user đăng nhập chỉ được tính 1 lần duy nhất
+            if (!string.IsNullOrEmpty(userId))
             {
                 await _documentService.IncreaseViewCountAsync(id, userId);
             }
