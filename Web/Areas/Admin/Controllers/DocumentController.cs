@@ -67,6 +67,10 @@ public async Task<IActionResult> Index(string searchString)
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             bool isAdmin = true; // Mặc định là true vì đang ở Area Admin
 
+            // Lấy trạng thái tài liệu trước khi xóa để hiển thị thông báo chính xác
+            var doc = await _documentService.GetByIdAsync(id);
+            bool wasApproved = doc?.IsApproved ?? false;
+
             var success = await _documentService.DeleteAsync(id, currentUserId, isAdmin);
 
             if (!success)
@@ -75,7 +79,15 @@ public async Task<IActionResult> Index(string searchString)
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = "Xóa tài liệu thành công. Đã trừ điểm người đăng bài!";
+            if (wasApproved)
+            {
+                TempData["Success"] = "Xóa tài liệu thành công. Đã thu hồi 10 điểm của người đăng bài!";
+            }
+            else
+            {
+                TempData["Success"] = "Đã từ chối và xóa tài liệu thành công (Không trừ điểm).";
+            }
+            
             return RedirectToAction(nameof(Index));
         }
     }
