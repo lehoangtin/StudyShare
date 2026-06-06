@@ -125,7 +125,8 @@
                                             <th class="ps-4 py-3 text-muted text-uppercase" style="font-size: 0.85rem;">Người vi phạm</th>
                                             <th class="py-3 text-muted text-uppercase" style="font-size: 0.85rem;">Phát hiện bởi</th>
                                             <th class="py-3 text-muted text-uppercase" style="width: 40%; font-size: 0.85rem;">Nội dung & Hình phạt</th>
-                                            <th class="text-end pe-4 py-3 text-muted text-uppercase" style="font-size: 0.85rem;">Thời gian</th>
+                                            <th class="py-3 text-muted text-uppercase" style="font-size: 0.85rem;">Thời gian</th>
+                                            <th class="text-end pe-4 py-3 text-muted text-uppercase" style="font-size: 0.85rem;">Thao tác</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -146,8 +147,13 @@
                                                             <i class="bi bi-hammer me-1"></i> @item.ActionTaken
                                                         </span>
                                                     </td>
-                                                    <td class="text-end pe-4 text-muted small fw-medium">
+                                                    <td class="text-muted small fw-medium">
                                                         @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <a asp-action="ViewReports" asp-route-id="@item.TargetUserId" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold text-primary" title="Xem chi tiết hồ sơ vi phạm">
+                                                            Chi tiết
+                                                        </a>
                                                     </td>
                                                 </tr>
                                             }
