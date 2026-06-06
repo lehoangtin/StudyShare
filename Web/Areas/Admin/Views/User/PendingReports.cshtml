@@ -66,7 +66,7 @@
                                         @if (Model.PendingReports.Any()) {
                                             foreach (var item in Model.PendingReports) {
                                                 <tr>
-                                                    <td class="ps-4 py-3">
+                                                    <td class="ps-4 py-3 text-nowrap">
                                                         <div class="fw-bold text-danger fs-6">@item.TargetUserName</div>
                                                         <small class="text-muted">ID: @item.TargetUserId.Substring(0, 8)...</small>
                                                     </td>
@@ -133,7 +133,7 @@
                                         @if (Model.ResolvedReports.Any()) {
                                             @foreach (var item in Model.ResolvedReports) {
                                                 <tr>
-                                                    <td class="ps-4 py-3 fw-bold text-dark fs-6">@item.TargetUserName</td>
+                                                    <td class="ps-4 py-3 fw-bold text-dark fs-6 text-nowrap">@item.TargetUserName</td>
                                                     <td>
                                                         @if (item.Reason.Contains("[HỆ THỐNG AI]")) {
                                                             <span class="badge bg-info text-white rounded-pill px-3 py-2 shadow-sm"><i class="bi bi-robot me-1"></i> AI System</span>
@@ -147,7 +147,7 @@
                                                             <i class="bi bi-hammer me-1"></i> @item.ActionTaken
                                                         </span>
                                                     </td>
-                                                    <td class="text-muted small fw-medium">
+                                                    <td class="text-muted small fw-medium text-nowrap">
                                                         @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                                                     </td>
                                                     <td class="text-end pe-4">
