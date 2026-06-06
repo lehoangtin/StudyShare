@@ -19,33 +19,45 @@
             } *@
 
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="card-header bg-white py-4 border-bottom px-4">
-                    <div class="row align-items-center g-3">
-                        <div class="col-md-5">
-                            <h4 class="m-0 fw-bold text-primary"><i class="bi bi-chat-square-text me-2"></i>Danh sách câu hỏi</h4>
-                        </div>
-                        <div class="col-md-7">
-                            <form asp-action="Index" method="get">
-                                <div class="input-group shadow-sm rounded-pill overflow-hidden border">
-                                    <span class="input-group-text bg-light border-0 pe-1"><i class="bi bi-search text-muted"></i></span>
-                                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control border-0 bg-light" placeholder="Tìm kiếm nội dung, người đăng...">
-                                    <button type="submit" class="btn btn-primary px-4 fw-medium">Tìm kiếm</button>
-                                </div>
-                            </form>
-                        </div>
+                <div class="card-header bg-white pt-4 pb-3 border-bottom-0">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                        <h4 class="fw-bold text-primary mb-3 mb-md-0">
+                            <i class="bi bi-chat-square-text me-2"></i>Danh sách câu hỏi
+                        </h4>
+
+                        <form asp-action="Index" method="get" class="d-flex" style="max-width: 400px; width: 100%;">
+                            <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                                <span class="input-group-text bg-light border-0 pe-1"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control border-0 bg-light" placeholder="Tìm kiếm nội dung...">
+                                <button type="submit" class="btn btn-primary px-4 fw-medium">Tìm kiếm</button>
+                            </div>
+                        </form>
                     </div>
+
+                    <ul class="nav nav-pills bg-light p-1 rounded-pill shadow-sm d-inline-flex" id="questionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active rounded-pill fw-bold px-4 transition-all" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab">
+                                Tất cả câu hỏi
+                                @if (Model != null && Model.Any()) {
+                                    <span class="badge bg-primary rounded-pill ms-1">@Model.Count()</span>
+                                }
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 custom-table">
-                            <thead class="bg-light text-uppercase small text-muted">
-                                <tr>
-                                    <th class="ps-4 py-3" style="width: 45%;">Nội dung thảo luận</th>
-                                    <th class="py-3">Thông tin</th>
-                                    <th class="py-3 text-center">Trả lời</th>
-                                    <th class="text-center py-3 pe-4">Hành động</th>
-                                </tr>
-                            </thead>
+                <div class="card-body p-0 border-top">
+                    <div class="tab-content" id="questionTabsContent">
+                        <div class="tab-pane fade show active" id="all-pane" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 custom-table">
+                                    <thead class="table-light text-uppercase small text-muted">
+                                        <tr>
+                                            <th class="ps-4 py-3" style="width: 45%;">Nội dung thảo luận</th>
+                                            <th class="py-3">Thông tin</th>
+                                            <th class="py-3 text-center">Trả lời</th>
+                                            <th class="text-center pe-4 py-3">Hành động</th>
+                                        </tr>
+                                    </thead>
                             <tbody>
                                 @if (Model.Any())
                                 {
@@ -105,7 +117,9 @@
                                     </tr>
                                 }
                             </tbody>
-                        </table>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
