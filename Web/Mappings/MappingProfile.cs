@@ -100,7 +100,7 @@ namespace StudyShare.Mappings
                     src.Target != null ? src.Target.Id : null))
                 .ForMember(dest => dest.TargetContent, opt => opt.MapFrom(src => 
                     src.Answer != null ? src.Answer.Content : 
-                    src.Question != null ? src.Question.Content : 
+                    src.Question != null ? (!string.IsNullOrEmpty(src.Question.Content) ? (src.Question.Title + " - " + src.Question.Content) : src.Question.Title) : 
                     src.Document != null ? src.Document.Title : null));
 
             CreateMap<ReportResponse, ReportViewModel>();
