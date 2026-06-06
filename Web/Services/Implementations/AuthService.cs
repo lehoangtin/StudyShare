@@ -29,7 +29,7 @@ namespace StudyShare.Services.Implementations
 
             // 2. DÙNG USERNAME CỦA USER ĐÓ ĐỂ ĐĂNG NHẬP (Tuyệt đối không truyền trực tiếp model.Email vào đây)
             return await _signInManager.PasswordSignInAsync(
-                user.UserName, // <--- Quan trọng nhất ở đây
+                user.UserName, 
                 model.Password, 
                 model.RememberMe, 
                 lockoutOnFailure: true

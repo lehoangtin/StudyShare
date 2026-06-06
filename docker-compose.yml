@@ -1,15 +1,5 @@
 
 services:
-  # 1. Cấu hình SQL Server
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Password123" # Khớp với appsettings.json của bạn
-    ports:
-      - "1434:1433"
-    volumes:
-      - sql_data:/var/opt/mssql
 
   # 2. Cấu hình .NET Web App
   # 2. Cấu hình .NET Web App
@@ -20,10 +10,17 @@ services:
     ports:
       # SỬA 80 THÀNH 8080 Ở ĐÂY:
       - "8080:8080" 
-    depends_on:
-      - db
     environment:
-      - ConnectionStrings__PBL3ConnectionString=Server=db,1433;Database=PBL3;User ID=SA;Password=Password123;TrustServerCertificate=True
+      - ConnectionStrings__PBL3ConnectionString=Server=tcp:studyshare-db-tin.database.windows.net,1433;Initial Catalog=StudyShareDB;Persist Security Info=False;User ID=hoangtin;Password=Tin@1234;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+      - AIServiceUrl=http://aiservice:8000/
+      - MailSettings__Mail=hoangtin422006@gmail.com
+      - MailSettings__DisplayName=StudyShare
+      - MailSettings__Password=gnmvcdhnwgljyyel
+      - MailSettings__Host=smtp.gmail.com
+      - MailSettings__Port=587
+    volumes:
+      - dataprotection_keys:/app/dataprotection-keys
+      - web_uploads:/app/wwwroot/uploads
   # 3. Cấu hình AI Service (Python)
   aiservice:
     build:
@@ -35,4 +32,5 @@ services:
       - ./Ai/.env
 
 volumes:
-  sql_data:
+  dataprotection_keys:
+  web_uploads:

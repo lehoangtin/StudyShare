@@ -71,9 +71,15 @@ namespace StudyShare.Controllers
             var document = await _documentService.GetDocumentDetailsAsync(id);
             if (document == null) return NotFound();
 
-            // Tối ưu: Lấy User ID qua Claims
+            // Lấy User ID qua Claims
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
+            // Tăng lượt xem — chỉ tính nếu user đã đăng nhập và không phải chính tác giả
+            if (!string.IsNullOrEmpty(userId) && document.UserId != userId)
+            {
+                await _documentService.IncreaseViewCountAsync(id, userId);
+            }
+
             bool isSaved = false;
             if (!string.IsNullOrEmpty(userId))
             {
@@ -84,5 +90,6 @@ namespace StudyShare.Controllers
 
             return View(document);
         }
+
     }
 }

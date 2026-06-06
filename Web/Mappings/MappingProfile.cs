@@ -12,7 +12,7 @@ namespace StudyShare.Mappings
     {
         public MappingProfile()
         {
-            // 1. APP USER MAPPINGS (Đã gộp trùng lặp & fix lỗi)
+            // 1. APP USER MAPPINGS
             CreateMap<AppUser, UserResponse>()
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
                 .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount))

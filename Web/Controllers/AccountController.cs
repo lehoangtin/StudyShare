@@ -5,20 +5,23 @@ using StudyShare.Services.Interfaces;
 using StudyShare.Services; 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using StudyShare.Models; // Thêm để dùng AppUser
+using StudyShare.Models;
+using Microsoft.Extensions.Logging;
 namespace StudyShare.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IAuthService _authService;
         private readonly IEmailSender _emailSender;
-        private readonly SignInManager<AppUser> _signInManager; // Thêm SignInManager để xử lý đăng xuất
+        private readonly SignInManager<AppUser> _signInManager;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IAuthService authService, IEmailSender emailSender, SignInManager<AppUser> signInManager)
+        public AccountController(IAuthService authService, IEmailSender emailSender, SignInManager<AppUser> signInManager, ILogger<AccountController> logger)
         {
             _authService = authService;
             _emailSender = emailSender;
             _signInManager = signInManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -58,7 +61,6 @@ namespace StudyShare.Controllers
                     return View(model);
                 }
 
-                // 🔥 THÊM ĐOẠN NÀY ĐỂ BẮT LỖI CHƯA XÁC NHẬN EMAIL
                 if (result.IsNotAllowed)
                 {
                     ModelState.AddModelError(string.Empty, "Tài khoản của bạn chưa được xác nhận. Vui lòng kiểm tra Email để kích hoạt tài khoản trước khi đăng nhập!");
@@ -108,7 +110,6 @@ namespace StudyShare.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            // Đăng xuất xong thì đuổi về trang chủ
             return RedirectToAction("Index", "Home", new { area = "" });
         }
 
@@ -134,20 +135,19 @@ namespace StudyShare.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _authService.GetUserByEmailAsync(model.Email);
-                
-                // 1. Chỉ cần user khác null là gửi mail. Bỏ điều kiện IsEmailConfirmedAsync đi để test dễ hơn
                 if (user != null) 
                 {
+                    _logger.LogInformation("[FORGOT PASSWORD] Tìm thấy user {Email}, đang tạo token...", model.Email);
                     // 2. Tạo mã token
                     var code = await _authService.GeneratePasswordResetTokenAsync(user);
                     
-                    // 3. SỬA LỖI Ở ĐÂY: Phải truyền cả 'email' và 'code' (chứ không phải 'token') 
                     // để khớp với hàm ResetPassword(string email, string code) của Identity
                     var callbackUrl = Url.Action("ResetPassword", "Account", 
                         new { email = model.Email, code = code }, 
                         protocol: HttpContext.Request.Scheme);
 
-                    // 4. HTML làm đẹp cho Email
+                    _logger.LogInformation("[FORGOT PASSWORD] Callback URL: {Url}", callbackUrl);
+
                     string htmlMessage = $@"
                         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
                             <h2 style='color: #2563eb;'>StudyShare</h2>
@@ -158,8 +158,11 @@ namespace StudyShare.Controllers
                             <p style='color: #6b7280; font-size: 0.9em;'>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.</p>
                         </div>";
 
-                    // 5. Ra lệnh gửi mail
                     await _emailSender.SendEmailAsync(model.Email, "Khôi phục mật khẩu - StudyShare", htmlMessage);
+                }
+                else
+                {
+                    _logger.LogWarning("[FORGOT PASSWORD] Không tìm thấy user với email: {Email}", model.Email);
                 }
 
                 // Báo thành công (Dù email có thật hay không để bảo mật)
@@ -172,7 +175,6 @@ namespace StudyShare.Controllers
         public IActionResult ForgotPasswordConfirmation() => View();
 
         [HttpGet]
-        // Bổ sung thêm tham số email
         public IActionResult ResetPassword(string? email = null, string? code = null) 
         {
             if (code == null || email == null)
@@ -203,7 +205,7 @@ namespace StudyShare.Controllers
 
             foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
             
-            return View();
+            return View(model);
         }
 
         [HttpGet]

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using StudyShare.Services.Interfaces;
 
 namespace StudyShare.Services
@@ -21,14 +22,16 @@ namespace StudyShare.Services
     public class AIService : IAIService
     {
         private readonly HttpClient _httpClient;
-        
         private readonly string _apiKey = "DayLaMatKhauBaoMatCuaToi";
 
-        public AIService(HttpClient httpClient)
+        public AIService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            
-            _httpClient.BaseAddress = new Uri("http://aiservice:8000");
+
+            // Đọc URL từ config: appsettings.json hoặc biến môi trường AIServiceUrl
+            var baseUrl = configuration["AIServiceUrl"] ?? "http://127.0.0.1:8000/";
+            _httpClient.BaseAddress = new Uri(baseUrl);
+
             if (!_httpClient.DefaultRequestHeaders.Contains("X-PBL3-API-KEY"))
             {
                 _httpClient.DefaultRequestHeaders.Add("X-PBL3-API-KEY", _apiKey);
@@ -43,7 +46,6 @@ namespace StudyShare.Services
 
             try
             {
-                // Gọi API 
                 var response = await _httpClient.PostAsync("api/chat", jsonContent);
 
                 if (response.IsSuccessStatusCode)
@@ -54,7 +56,6 @@ namespace StudyShare.Services
                 }
                 else
                 {
-                    // Hiển thị lỗi HTTP nếu có 
                     return $"Lỗi Server AI: HTTP {response.StatusCode} - Vui lòng kiểm tra lại API Key hoặc Python Console.";
                 }
             }

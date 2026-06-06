@@ -8,10 +8,17 @@ using StudyShare.Services.Implementations;
 using StudyShare.Mappings;
 using StudyShare.Repositories.Interfaces;
 using StudyShare.Repositories.Implementations;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+
+// 🔑 Persist Data Protection keys vào disk để không bị mất khi Docker restart
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/dataprotection-keys"))
+    .SetApplicationName("StudyShare");
 
 // 🔥 AI Service (giữ từ nhánh minh)
 // builder.Services.AddHttpClient<ai.Services.AIService>();
@@ -75,23 +82,56 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 builder.Services.AddTransient<EmailSender>();
 
 var app = builder.Build();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
-    {
-        // --- THÊM 2 DÒNG NÀY ĐỂ TỰ ĐỘNG MIGRATION (TẠO DB) ---
-        var context = services.GetRequiredService<AppDbContext>();
-        await context.Database.MigrateAsync(); 
-        // -----------------------------------------------------
+    var context = services.GetRequiredService<AppDbContext>();
 
-        await DataSeeder.SeedAllAsync(services);
-    }
-    catch (Exception ex)
+    int retries = 0;
+    bool connected = false;
+
+    // Chờ tối đa 100 giây (20 lần * 5 giây)
+    while (!connected && retries < 20)
     {
-        Console.WriteLine("Lỗi Seeding: " + ex.Message);
+        try
+        {
+            Console.WriteLine($"Đang đợi Database... (lần {retries + 1}/20)");
+            if (context.Database.CanConnect())
+            {
+                connected = true;
+                Console.WriteLine("Kết nối Database thành công!");
+            }
+            else
+            {
+                throw new Exception("Chưa kết nối được");
+            }
+        }
+        catch (Exception)
+        {
+            retries++;
+            System.Threading.Thread.Sleep(5000); // Đợi 5 giây trước khi thử lại
+        }
+    }
+
+    if (connected)
+    {
+        try {
+            Console.WriteLine("Đang chạy Migrate và Seed...");
+            await context.Database.MigrateAsync();
+            await DataSeeder.SeedAllAsync(services);
+            Console.WriteLine("Hoàn tất!");
+        } catch (Exception ex) {
+            Console.WriteLine("LỖI MIGRATION: " + ex.Message);
+        }
     }
 }
+
+// 🔀 Cho phép đọc đúng Host/Scheme khi chạy sau Docker
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseStaticFiles();
 app.UseRouting();

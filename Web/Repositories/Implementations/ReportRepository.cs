@@ -20,7 +20,6 @@ namespace StudyShare.Repositories.Implementations
                 .Where(r => r.TargetUserId == userId)
                 .Include(r => r.Reporter) // Lấy thông tin người gửi báo cáo
                 .Include(r => r.Target)   // Lấy thông tin người bị báo cáo
-                // THÊM 3 DÒNG DƯỚI ĐÂY ĐỂ LẤY NỘI DUNG VI PHẠM THỰC TẾ
                 .Include(r => r.Document) 
                 .Include(r => r.Question)
                 .Include(r => r.Answer)
@@ -41,7 +40,7 @@ namespace StudyShare.Repositories.Implementations
             return await _context.Reports
                 .Include(r => r.Reporter)
                 .Include(r => r.Target)
-                .Include(r => r.Document)
+                // .Include(r => r.Document)
                 .Include(r => r.Question)
                 .Include(r => r.Answer)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -53,8 +52,7 @@ namespace StudyShare.Repositories.Implementations
                 .Where(r => !r.IsResolved)
                 .Include(r => r.Reporter)
                 .Include(r => r.Target)
-                // THÊM 3 DÒNG NÀY ĐỂ TRANG DANH SÁCH CŨNG LẤY ĐƯỢC LINK
-                .Include(r => r.Document)
+                // .Include(r => r.Document)
                 .Include(r => r.Question)
                 .Include(r => r.Answer)
                 .OrderByDescending(r => r.CreatedAt)

@@ -118,45 +118,48 @@ public async Task<IActionResult> Details(string id)
         }
 
         // Dùng hàm PenalizeUserAsync (Trừ 10 điểm, +1 gậy)
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
-{
-if (string.IsNullOrEmpty(userId)) return NotFound("Không tìm thấy ID người dùng.");
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Penalize(string userId, int reportId, int pointsDeducted = 10)
+        {
+        if (string.IsNullOrEmpty(userId)) return NotFound("Không tìm thấy ID người dùng.");
 
-    // 1. Lấy thông tin Report
-    var report = await _reportService.GetByIdAsync(reportId);
-    if (report == null) return NotFound("Không tìm thấy báo cáo.");
+            // 1. Lấy thông tin Report
+            var report = await _reportService.GetByIdAsync(reportId);
+            if (report == null) return NotFound("Không tìm thấy báo cáo.");
 
-    // 2. XÓA NỘI DUNG BỊ VI PHẠM (Chỉ xử lý Question và Answer)
-    bool isContentDeleted = false;
-    if (report.QuestionId.HasValue)
-    {
-        isContentDeleted = await _questionService.DeleteByAdminAsync(report.QuestionId.Value);
-    }
-    else if (report.AnswerId.HasValue)
-    {
-        isContentDeleted = await _answerService.DeleteByAdminAsync(report.AnswerId.Value);
-    }
+            // 2. XÓA NỘI DUNG BỊ VI PHẠM (Chỉ xử lý Question và Answer)
+            bool isContentDeleted = false;
+            if (report.QuestionId.HasValue)
+            {
+                isContentDeleted = await _questionService.DeleteByAdminAsync(report.QuestionId.Value);
+            }
+            else if (report.AnswerId.HasValue)
+            {
+                isContentDeleted = await _answerService.DeleteByAdminAsync(report.AnswerId.Value);
+            }
 
-    // 3. PHẠT USER: Trừ điểm và Tăng 1 gậy (WarningCount)
-    var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
-    
-    if (success)
-    {
-        // 4. Cập nhật trạng thái Report
-        string actionMessage = $"Admin đã xóa bài vi phạm, trừ {pointsDeducted} điểm và cảnh cáo.";
-        await _reportService.ResolveWithActionAsync(reportId, actionMessage);
-        
-        TempData["Success"] = "Đã xóa bài vi phạm, trừ điểm và ghi nhận 1 lần cảnh cáo thành công.";
-    }
-    else
-    {
-        TempData["Error"] = "Có lỗi xảy ra khi xử lý user.";
-    }
-    
-    return RedirectToAction(nameof(PendingReports));
-}
+            // 3. PHẠT USER: Trừ điểm và Tăng 1 gậy (WarningCount)
+            var success = await _userService.PenalizeUserAsync(userId, pointsDeducted, 1);
+
+            // 4. Luôn luôn cập nhật trạng thái Report vào lịch sử, bất kể bước phạt có thành công hay không
+            string actionMessage;
+            if (success)
+            {
+                actionMessage = isContentDeleted
+                    ? $"Admin đã xóa bài vi phạm, trừ {pointsDeducted} điểm và cảnh cáo."
+                    : $"Admin đã trừ {pointsDeducted} điểm và ghi nhận 1 lần cảnh cáo.";
+                TempData["Success"] = "Đã xử lý vi phạm, trừ điểm và ghi nhận 1 lần cảnh cáo thành công.";
+            }
+            else
+            {
+                actionMessage = "Admin đã xử lý báo cáo nhưng gặp lỗi khi trừ điểm người dùng.";
+                TempData["Error"] = "Có lỗi xảy ra khi xử lý user.";
+            }
+            await _reportService.ResolveWithActionAsync(reportId, actionMessage);
+            
+            return RedirectToAction(nameof(PendingReports));
+        }
 
         // Bỏ qua báo cáo
         [HttpPost]
@@ -168,33 +171,33 @@ if (string.IsNullOrEmpty(userId)) return NotFound("Không tìm thấy ID ngườ
             return RedirectToAction("PendingReports");
         }
         [HttpPost]
-    public async Task<IActionResult> ChangeRole(string userId, string role)
-    {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var success = await _userService.UpdateUserRoleAsync(userId, role, currentUserId);
+        public async Task<IActionResult> ChangeRole(string userId, string role)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var success = await _userService.UpdateUserRoleAsync(userId, role, currentUserId);
 
-        if (success) TempData["Success"] = "Cập nhật quyền hạn thành công!";
-        else TempData["Error"] = "Bạn không có đủ thẩm quyền thực hiện thao tác này!";
+            if (success) TempData["Success"] = "Cập nhật quyền hạn thành công!";
+            else TempData["Error"] = "Bạn không có đủ thẩm quyền thực hiện thao tác này!";
 
-        return RedirectToAction("Index");
-    }
-    [HttpGet]
-[Authorize(Roles = "SuperAdmin")] // Chỉ Super Admin mới được vào trang này
-public async Task<IActionResult> ManageRoles(string searchString)
-{
-    var users = await _userService.GetAllUsersAsync();
-    var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
+            return RedirectToAction("Index");
+        }
+        [HttpGet]
+        [Authorize(Roles = "SuperAdmin")] // Chỉ Super Admin mới được vào trang này
+        public async Task<IActionResult> ManageRoles(string searchString)
+        {
+            var users = await _userService.GetAllUsersAsync();
+            var viewModels = _mapper.Map<IEnumerable<UserViewModel>>(users);
 
-    if (!string.IsNullOrEmpty(searchString))
-    {
-        searchString = searchString.ToLower();
-        viewModels = viewModels.Where(u => 
-            u.FullName.ToLower().Contains(searchString) || 
-            u.Email.ToLower().Contains(searchString)
-        ).ToList();
-    }
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                viewModels = viewModels.Where(u => 
+                    (!string.IsNullOrEmpty(u.FullName) && u.FullName.ToLower().Contains(searchString)) || 
+                    (!string.IsNullOrEmpty(u.Email) && u.Email.ToLower().Contains(searchString))
+                ).ToList();
+            }
 
-    return View(viewModels);
-}
+            return View(viewModels);
+        }
     }
 }

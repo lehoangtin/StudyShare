@@ -5,8 +5,6 @@ namespace StudyShare.Models
 {
     public class AppUser : IdentityUser
     {
-        // 🔥 thêm field của riêng bạn
-
         public string FullName { get; set; }
 
         public string? Avatar { get; set; }

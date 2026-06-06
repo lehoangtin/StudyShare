@@ -74,39 +74,28 @@ public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null) return false;
 
-            // 1. Đảo ngược giá trị của biến IsBanned
+            // Đảo ngược trạng thái ban
             user.IsBanned = !user.IsBanned;
 
-            // 🔥 THÊM ĐOẠN NÀY: NẾU ADMIN MỞ KHÓA THÌ RESET SỐ LẦN CẢNH CÁO VỀ 0 ĐỂ CHO HỌ CƠ HỘI LÀM LẠI
-            if (!user.IsBanned)
+            // Bật LockoutEnabled để Identity cho phép khóa tài khoản
+            user.LockoutEnabled = true;
+
+            if (user.IsBanned)
             {
+                // Khóa: set LockoutEnd = vĩnh viễn
+                user.LockoutEnd = DateTimeOffset.MaxValue;
+            }
+            else
+            {
+                // Mở khóa: xóa LockoutEnd và reset WarningCount
+                user.LockoutEnd = null;
                 user.WarningCount = 0;
             }
 
-            // 2. Phải bật LockoutEnabled thì Identity mới cho phép thiết lập thời gian khóa
-            if (!user.LockoutEnabled)
-            {
-                user.LockoutEnabled = true;
-            }
-
-            // 3. Lưu cập nhật IsBanned (và LockoutEnabled, WarningCount) xuống Database TRƯỚC
-            var updateResult = await _userRepository.UpdateUserAsync(user);
-
-            // 4. Nếu lưu DB thành công, tiến hành gọi Identity để khóa/mở khóa thời gian
-            if (updateResult)
-            {
-                if (user.IsBanned)
-                {
-                    await _userRepository.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue); 
-                }
-                else
-                {
-                    await _userRepository.SetLockoutEndDateAsync(user, null);
-                }
-            }
-
-            return updateResult;
+            // Chỉ 1 lần UpdateAsync duy nhất — tránh ConcurrencyStamp conflict
+            return await _userRepository.UpdateUserAsync(user);
         }
+
 
         public async Task<AppUser?> GetUserProfileAsync(string userId)
         {
@@ -121,17 +110,33 @@ public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
             user.FullName = model.FullName;
             user.Email = model.Email;
 
-            // Nghiệp vụ xử lý file nằm ở lớp Business Logic
+            // Xử lý upload ảnh đại diện
             if (avatarFile != null && avatarFile.Length > 0)
             {
-                var ext = Path.GetExtension(avatarFile.FileName);
-                var fileName = Guid.NewGuid() + ext;
-                var path = Path.Combine(_env.WebRootPath, "images", fileName);
-                using var stream = new FileStream(path, FileMode.Create);
-                await avatarFile.CopyToAsync(stream);
+                // 1. Định nghĩa thư mục lưu ảnh (wwwroot/images)
+                var uploadDir = Path.Combine(_env.WebRootPath, "images");
+                
+                // 2. TỰ ĐỘNG TẠO THƯ MỤC NẾU CHƯA CÓ
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                // 3. Tạo tên file mới để tránh trùng lặp
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(avatarFile.FileName);
+                var path = Path.Combine(uploadDir, fileName);
+
+                // 4. Lưu file vào thư mục
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    await avatarFile.CopyToAsync(stream);
+                }
+                
+                // 5. Cập nhật đường dẫn ảnh vào User
                 user.Avatar = "/images/" + fileName;
             }
             
+            // Lưu thay đổi vào Database
             return await _userRepository.UpdateUserAsync(user);
         }
 
@@ -193,28 +198,28 @@ public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
         }
         // Trong file Services/Implementations/UserService.cs
         public async Task<bool> PenalizeUserAsync(string userId, int points, int warningIncrement = 1)
-{
-    var user = await _userManager.FindByIdAsync(userId);
-    if (user == null) return false;
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
 
-    // 1. Trừ điểm người dùng
-    user.Points -= points;
-    
-    // 2. TĂNG SỐ LẦN VI PHẠM (Đây là lý do Database của bạn có thể vẫn đang là 0)
-    user.WarningCount += warningIncrement;
+            // 1. Trừ điểm người dùng
+            user.Points -= points;
+            
+            // 2. TĂNG SỐ LẦN VI PHẠM (Đây là lý do Database của bạn có thể vẫn đang là 0)
+            user.WarningCount += warningIncrement;
 
-    // 3. Tự động khóa tài khoản nếu vi phạm từ 3 lần trở lên
-    if (user.WarningCount >= 3)
-    {
-        user.IsBanned = true;
-        // Dùng Identity để khóa cứng tài khoản không cho đăng nhập (khóa tới năm 2999)
-        await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
-    }
+            // 3. Tự động khóa tài khoản nếu vi phạm từ 3 lần trở lên
+            if (user.WarningCount >= 3)
+            {
+                user.IsBanned = true;
+                // Dùng Identity để khóa cứng tài khoản không cho đăng nhập (khóa tới năm 2999)
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            }
 
-    // 4. Lưu tất cả thay đổi xuống Database
-    var result = await _userManager.UpdateAsync(user);
-    return result.Succeeded;
-}
+            // 4. Lưu tất cả thay đổi xuống Database
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
         public async Task<bool> AddPointsAsync(string userId, int points)
         {
             var user = await _userRepository.GetByIdAsync(userId);
@@ -224,26 +229,26 @@ public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
             return await _userRepository.UpdateUserAsync(user);
         }
         public async Task<bool> UpdateUserRoleAsync(string userId, string targetRole, string currentUserId)
-{
-    var targetUser = await _userManager.FindByIdAsync(userId);
-    var currentUser = await _userManager.FindByIdAsync(currentUserId);
+        {
+            var targetUser = await _userManager.FindByIdAsync(userId);
+            var currentUser = await _userManager.FindByIdAsync(currentUserId);
 
-    if (targetUser == null || currentUser == null) return false;
+            if (targetUser == null || currentUser == null) return false;
 
-    // 1. Chốt chặn: Không ai được quyền hạ bệ SuperAdmin (Trùm cuối)
-    if (await _userManager.IsInRoleAsync(targetUser, "SuperAdmin")) return false;
+            // 1. Chốt chặn: Không ai được quyền hạ bệ SuperAdmin (Trùm cuối)
+            if (await _userManager.IsInRoleAsync(targetUser, "SuperAdmin")) return false;
 
-    // 2. Chốt chặn: Chỉ SuperAdmin mới có quyền nâng người khác lên Admin hoặc hạ bậc Admin
-    bool isSuperAdmin = await _userManager.IsInRoleAsync(currentUser, "SuperAdmin");
-    if (!isSuperAdmin) return false; 
+            // 2. Chốt chặn: Chỉ SuperAdmin mới có quyền nâng người khác lên Admin hoặc hạ bậc Admin
+            bool isSuperAdmin = await _userManager.IsInRoleAsync(currentUser, "SuperAdmin");
+            if (!isSuperAdmin) return false; 
 
-    // 3. Xử lý thay đổi Role
-    var currentRoles = await _userManager.GetRolesAsync(targetUser);
-    await _userManager.RemoveFromRolesAsync(targetUser, currentRoles); // Xóa hết role cũ
-    
-    var result = await _userManager.AddToRoleAsync(targetUser, targetRole); // Thêm role mới
-    return result.Succeeded;
-}
+            // 3. Xử lý thay đổi Role
+            var currentRoles = await _userManager.GetRolesAsync(targetUser);
+            await _userManager.RemoveFromRolesAsync(targetUser, currentRoles); // Xóa hết role cũ
+            
+            var result = await _userManager.AddToRoleAsync(targetUser, targetRole); // Thêm role mới
+            return result.Succeeded;
+        }
 
     }
 }

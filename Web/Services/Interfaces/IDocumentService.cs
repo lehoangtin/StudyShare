@@ -15,6 +15,13 @@ namespace StudyShare.Services.Interfaces
         Task<bool> CreateAsync(DocumentCreateRequest request, string userId);
         Task<bool> DeleteAsync(int id, string currentUserId, bool isAdmin);
         Task<bool> IncreaseDownloadCountAsync(int id);
+
+        /// <summary>
+        /// Tăng lượt xem — mỗi user chỉ được tính 1 lần cho mỗi tài liệu.
+        /// Trả về true nếu là lần đầu xem (đã tăng Views), false nếu đã xem rồi (bỏ qua).
+        /// </summary>
+        Task<bool> IncreaseViewCountAsync(int documentId, string userId);
+
         Task<IEnumerable<DocumentResponse>> GetUserDocumentsAsync(string userId);
         Task<IEnumerable<DocumentResponse>> GetAllForAdminAsync(string search);
         Task<DocumentResponse?> GetDetailsForReviewAsync(int id);
@@ -24,6 +31,5 @@ namespace StudyShare.Services.Interfaces
         Task<IEnumerable<DocumentResponse>> GetAllApprovedAsync();
         Task<DocumentResponse?> GetDocumentDetailsAsync(int id);
         Task<IEnumerable<DocumentResponse>> GetPendingDocumentsAsync();
-
     }
 }

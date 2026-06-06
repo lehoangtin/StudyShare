@@ -49,23 +49,27 @@ namespace StudyShare.Repositories.Implementations
         }
 
        public async Task<bool> DeleteAsync(Question question)
-{
-    // 1. Xóa báo cáo của câu hỏi
-    var questionReports = _context.Reports.Where(r => r.QuestionId == question.Id);
-    if (questionReports.Any()) _context.Reports.RemoveRange(questionReports);
+        {
+            // 1. Gỡ liên kết Report khỏi Question (không xóa report để giữ lại lịch sử xử lý)
+            var questionReports = _context.Reports.Where(r => r.QuestionId == question.Id).ToList();
+            foreach (var r in questionReports)
+                r.QuestionId = null;
 
-    // 2. Xóa báo cáo của các câu trả lời
-    var answerIds = _context.Answers.Where(a => a.QuestionId == question.Id).Select(a => a.Id).ToList();
-    if (answerIds.Any())
-    {
-        var answerReports = _context.Reports.Where(r => r.AnswerId.HasValue && answerIds.Contains(r.AnswerId.Value));
-        _context.Reports.RemoveRange(answerReports);
-    }
+            // 2. Gỡ liên kết Report khỏi các Answer của Question
+            var answerIds = _context.Answers.Where(a => a.QuestionId == question.Id).Select(a => a.Id).ToList();
+            if (answerIds.Any())
+            {
+                var answerReports = _context.Reports
+                    .Where(r => r.AnswerId.HasValue && answerIds.Contains(r.AnswerId.Value))
+                    .ToList();
+                foreach (var r in answerReports)
+                    r.AnswerId = null;
+            }
 
-    // 3. Xóa câu hỏi
-    _context.Questions.Remove(question);
-    return await _context.SaveChangesAsync() > 0;
-}
+            // 3. Xóa câu hỏi (Answer sẽ bị xóa cascade theo Question)
+            _context.Questions.Remove(question);
+            return await _context.SaveChangesAsync() > 0;
+        }
 
         public async Task<IEnumerable<Question>> GetAllForAdminAsync()
         {

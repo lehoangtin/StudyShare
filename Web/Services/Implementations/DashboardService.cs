@@ -32,17 +32,23 @@ namespace StudyShare.Services.Implementations
 
         public async Task<AdminDashboardViewModel> GetAdminDashboardStatsAsync()
         {
-            var allUsers = await _userRepo.GetAllAsync();
-            var allDocs = await _docRepo.GetAllAsync();
+            var allUsers     = await _userRepo.GetAllAsync();
+            var allDocs      = await _docRepo.GetAllAsync();
+            var allQuestions = await _quesRepo.GetAllAsync();
+            var allAnswers   = await _ansRepo.GetAllAsync();
+            var allCategories = await _cateRepo.GetAllAsync();
 
             return new AdminDashboardViewModel
             {
-                TotalUsers = allUsers.Count(),
-                PendingDocuments = allDocs.Count(d => !d.IsApproved),
-                TotalDocuments = allDocs.Count(),
-                TotalQuestions = (await _quesRepo.GetAllAsync()).Count()
+                TotalUsers        = allUsers.Count(),
+                BannedUsers       = allUsers.Count(u => u.IsBanned),
+                TotalDocuments    = allDocs.Count(),
+                ApprovedDocuments = allDocs.Count(d => d.IsApproved),
+                PendingDocuments  = allDocs.Count(d => !d.IsApproved),
+                TotalQuestions    = allQuestions.Count(),
+                TotalAnswers      = allAnswers.Count(),
+                TotalCategories   = allCategories.Count()
             };
         }
-
     }
 }

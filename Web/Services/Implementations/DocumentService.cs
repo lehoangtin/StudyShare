@@ -211,6 +211,32 @@ public async Task<bool> DeleteAsync(int documentId, string currentUserId, bool i
             doc.DownloadCount++;
             return await _documentRepository.UpdateAsync(doc);
         }
+
+        public async Task<bool> IncreaseViewCountAsync(int documentId, string userId)
+        {
+            // Kiểm tra user này đã xem tài liệu này chưa
+            bool alreadyViewed = await _context.DocumentViews
+                .AnyAsync(v => v.DocumentId == documentId && v.UserId == userId);
+
+            // Nếu đã xem rồi → không làm gì, trả về false
+            if (alreadyViewed) return false;
+
+            // Ghi nhận lượt xem mới
+            _context.DocumentViews.Add(new DocumentView
+            {
+                DocumentId = documentId,
+                UserId = userId,
+                ViewedAt = DateTime.Now
+            });
+
+            // Tăng số đếm trực tiếp trên bảng Document (tránh race condition)
+            var doc = await _context.Documents.FindAsync(documentId);
+            if (doc != null) doc.Views++;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<IEnumerable<DocumentResponse>> GetUserDocumentsAsync(string userId)
         {
             var docs = await _documentRepository.GetUserDocumentsAsync(userId);

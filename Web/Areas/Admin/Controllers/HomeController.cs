@@ -29,8 +29,6 @@ namespace StudyShare.Areas.Admin.Controllers
         {
             var stats = await _dashboardService.GetAdminDashboardStatsAsync();
     
-            // Giả sử service của bạn cũng cung cấp TopUsers và PendingDocs
-            // Nếu chưa có, bạn hãy gọi thêm hàm từ UserService/DocumentService để lấy
             var topUsersDto = await _userService.GetTopRankingAsync(5); // Giả sử lấy top 5
             var pendingDocsDto = await _documentService.GetPendingDocumentsAsync();
             var viewModel = new AdminDashboardViewModel 

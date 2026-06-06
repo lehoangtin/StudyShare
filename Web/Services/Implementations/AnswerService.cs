@@ -11,11 +11,10 @@ namespace StudyShare.Services.Implementations
     {
         private readonly IAnswerRepository _answerRepository;
         private readonly IUserService _userService;
-        private readonly IAIService _aiService; // Thêm AI Service
-        private readonly IReportService _reportService; // Thêm Report Service
+        private readonly IAIService _aiService; 
+        private readonly IReportService _reportService;
         private readonly IMapper _mapper;
 
-        // Đã xóa IUserRepository vì không sử dụng tới
         public AnswerService(
             IAnswerRepository answerRepository, 
             IUserService userService, 
@@ -60,7 +59,7 @@ namespace StudyShare.Services.Implementations
             return await _answerRepository.CreateAsync(answer);
         }
 
-        // 🔥 THÊM HÀM UPDATE ĐỂ KIỂM TRA AI KHI SỬA BÌNH LUẬN
+        // HÀM UPDATE ĐỂ KIỂM TRA AI KHI SỬA BÌNH LUẬN
         public async Task<bool> UpdateAsync(AnswerUpdateRequest request, string currentUserId, bool isAdmin)
         {
             // Lấy Answer từ DB lên (Giả sử bạn có hàm GetForEditAsync hoặc GetByIdAsync trong Repo)
@@ -137,9 +136,9 @@ namespace StudyShare.Services.Implementations
             return _mapper.Map<IEnumerable<AnswerResponse>>(answers);
         }
         public async Task<StudyShare.DTOs.Responses.AnswerResponse> GetByIdAsync(int id)
-{
-    var answer = await _answerRepository.GetByIdAsync(id);
-    return _mapper.Map<AnswerResponse>(answer);
-}
+        {
+            var answer = await _answerRepository.GetByIdAsync(id);
+            return _mapper.Map<AnswerResponse>(answer);
+        }
     }
 }

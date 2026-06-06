@@ -17,7 +17,6 @@ namespace StudyShare.Services.Implementations
         }
         public async Task<Report> GetByIdAsync(int reportId)
         {
-            // Lấy nguyên bản ghi Report từ Database lên
             return await _reportRepository.GetByIdAsync(reportId);
         }
 
@@ -31,7 +30,7 @@ namespace StudyShare.Services.Implementations
         {
             var report = await _reportRepository.GetByIdAsync(reportId);
             if (report == null) return false;
-            report.IsResolved = true; // Giả sử model Report có field này
+            report.IsResolved = true; 
             await _reportRepository.UpdateAsync(report);
             return true;
         }
@@ -58,7 +57,7 @@ namespace StudyShare.Services.Implementations
         }
         // Thêm hàm này vào class ReportService
 // Trong ReportService.cs
-public async Task<int> CreateAutoReportAsync(string targetUserId, string reason, string actionTaken, int? docId = null, int? qid = null)
+        public async Task<int> CreateAutoReportAsync(string targetUserId, string reason, string actionTaken, int? docId = null, int? qid = null)
         {
             var report = new Report
             {

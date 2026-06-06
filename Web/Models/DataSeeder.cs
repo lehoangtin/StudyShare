@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using StudyShare.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq; // Cần thiết để dùng Where()
 using System.Threading.Tasks;
 
 namespace StudyShare.Models
@@ -14,6 +14,7 @@ namespace StudyShare.Models
             using var scope = serviceProvider.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             // ==============================================================
             // 1. KHỞI TẠO ROLES 
@@ -75,9 +76,7 @@ namespace StudyShare.Models
                 }
             }
 
-            // ==============================================================
             // 3. KHỞI TẠO THÊM 50 SINH VIÊN (CHO CÓ DATA ĐỂ TEST PHÂN TRANG)
-            // ==============================================================
             var random = new Random();
             for (int i = 1; i <= 50; i++)
             {
@@ -103,7 +102,6 @@ namespace StudyShare.Models
                 }
             }
 
-            // (Không gõ thêm logic tạo Document, Question... ở đây. Để T-SQL chạy nhanh hơn)
         }
     }
 }

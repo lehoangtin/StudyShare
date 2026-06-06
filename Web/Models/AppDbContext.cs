@@ -50,6 +50,23 @@ namespace StudyShare.Models
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            // 5. Cấu hình DOCUMENT VIEW (unique: mỗi user chỉ xem 1 lần/tài liệu)
+            builder.Entity<DocumentView>(entity =>
+            {
+                // Unique index: cặp (UserId, DocumentId) không được trùng
+                entity.HasIndex(v => new { v.UserId, v.DocumentId }).IsUnique();
+
+                entity.HasOne(v => v.User)
+                    .WithMany()
+                    .HasForeignKey(v => v.UserId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(v => v.Document)
+                    .WithMany()
+                    .HasForeignKey(v => v.DocumentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // 4. Cấu hình REPORT (Khắc phục lỗi bạn vừa gặp)
             builder.Entity<Report>(entity => {
                 // Đối với Người dùng liên quan: Để NoAction để tránh vòng lặp xóa
@@ -59,29 +76,29 @@ namespace StudyShare.Models
                 // ĐỐI VỚI NỘI DUNG: Chuyển sang CASCADE để khi xóa nội dung thì Report tự biến mất
                 // Đây chính là chìa khóa để fix lỗi crash lúc nãy!
                 
-                entity.HasOne(r => r.Document)
-                    .WithMany() // Nếu Document.cs có ICollection<Report> thì thay bằng .WithMany(d => d.Reports)
-                    .HasForeignKey(r => r.DocumentId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                // entity.HasOne(r => r.Document)
+                //     .WithMany() // Nếu Document.cs có ICollection<Report> thì thay bằng .WithMany(d => d.Reports)
+                //     .HasForeignKey(r => r.DocumentId)
+                //     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(r => r.Question)
-                    .WithMany() // Nếu Question.cs có ICollection<Report> thì thay bằng .WithMany(q => q.Reports)
+                    .WithMany()     
                     .HasForeignKey(r => r.QuestionId)
                     .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(r => r.Answer)
-                    .WithMany() // Nếu Answer.cs có ICollection<Report> thì thay bằng .WithMany(a => a.Reports)
+                    .WithMany() 
                     .HasForeignKey(r => r.AnswerId)
                     .OnDelete(DeleteBehavior.NoAction);
             });
         }
 
-        // Đăng ký các bảng dữ liệu
         public DbSet<Document> Documents { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }  
         public DbSet<SavedDocument> SavedDocuments { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<DocumentView> DocumentViews { get; set; }
     }
 }

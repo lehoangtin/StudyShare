@@ -9,10 +9,12 @@ namespace StudyShare.Services
     public class EmailSender : IEmailSender
     {
         private readonly MailSettings _mailSettings;
+        private readonly ILogger<EmailSender> _logger;
 
-        public EmailSender(IOptions<MailSettings> mailSettings)
+        public EmailSender(IOptions<MailSettings> mailSettings, ILogger<EmailSender> logger)
         {
             _mailSettings = mailSettings.Value;
+            _logger = logger;
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
@@ -33,14 +35,16 @@ namespace StudyShare.Services
 
     try
     {
+        _logger.LogInformation("[EMAIL] Đang kết nối SMTP {Host}:{Port}...", _mailSettings.Host, _mailSettings.Port);
         await smtp.ConnectAsync(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
         await smtp.AuthenticateAsync(_mailSettings.Mail, _mailSettings.Password);
         await smtp.SendAsync(message);
+        _logger.LogInformation("[EMAIL] Gửi email thành công tới {To}", email);
     }
     catch (Exception ex)
     {
-        // Thay vì Console.WriteLine, hãy ném lỗi để biết chính xác lỗi gì (Auth fail, Connection refused...)
-        throw new Exception($"Lỗi gửi mail: {ex.Message}");
+        _logger.LogError(ex, "[EMAIL] LỖI khi gửi email tới {To}", email);
+        throw;
     }
     finally
     {
