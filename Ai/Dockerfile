@@ -3,11 +3,11 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Cài đặt các thư viện
+RUN pip install --no-cache-dir google-genai uvicorn python-dotenv fastapi cachetools
+
 # Copy các file của Python vào container
 COPY . .
-
-# Cài đặt các thư viện theo README
-RUN pip install --no-cache-dir google-genai uvicorn python-dotenv fastapi cachetools
 # Mở port 8000
 EXPOSE 8000
 

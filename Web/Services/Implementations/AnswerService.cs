@@ -126,9 +126,9 @@ namespace StudyShare.Services.Implementations
 
             return await _answerRepository.DeleteAsync(answer);
         }
-        public async Task<IEnumerable<Answer>> GetAllForAdminAsync()
+        public async Task<IEnumerable<Answer>> GetAllForAdminAsync(string? search = null)
         {
-            return await _answerRepository.GetAllAsync();
+            return await _answerRepository.GetAllAsync(search);
         }
         public async Task<IEnumerable<AnswerResponse>> GetByUserIdAsync(string userId)
         {

@@ -12,7 +12,7 @@ namespace StudyShare.Services.Interfaces
         Task<bool> UpdateAsync(AnswerUpdateRequest request, string currentUserId, bool isAdmin);
         Task<IEnumerable<AnswerResponse>> GetByQuestionIdAsync(int questionId);
         Task<bool> DeleteByAdminAsync(int answerId);
-        Task<IEnumerable<Answer>> GetAllForAdminAsync();
+        Task<IEnumerable<Answer>> GetAllForAdminAsync(string? search = null);
         Task<IEnumerable<AnswerResponse>> GetByUserIdAsync(string userId);
         Task<AnswerResponse> GetByIdAsync(int id);
     }

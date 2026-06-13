@@ -419,7 +419,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @* --- LOGIC MODAL BANNED --- *@
-    @if (User.Identity.IsAuthenticated)
+    @if (User.Identity?.IsAuthenticated == true)
     {
         var currentUser = await UserManager.GetUserAsync(User);
         if (currentUser != null && (currentUser.WarningCount >= 3 || currentUser.IsBanned))

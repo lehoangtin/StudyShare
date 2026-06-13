@@ -16,16 +16,26 @@
                         <i class="bi bi-chat-left-text me-2"></i>Quản lý Bình luận
                     </h4>
 
-                    <ul class="nav nav-pills bg-light p-1 rounded-pill shadow-sm" id="answerTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active rounded-pill fw-bold px-4 transition-all" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab">
-                                Tất cả bình luận
-                                @if (Model != null && Model.Any()) {
-                                    <span class="badge bg-primary rounded-pill ms-1">@Model.Count()</span>
-                                }
-                            </button>
-                        </li>
-                    </ul>
+                    <div class="d-flex flex-wrap gap-3 align-items-center">
+                        <form method="get" asp-action="Index" class="d-flex" style="width: 300px;">
+                            <div class="input-group shadow-sm">
+                                <input type="text" name="search" value="@ViewData["CurrentSearch"]" class="form-control rounded-start-pill" placeholder="Tìm người đăng, nội dung..." />
+                                <button type="submit" class="btn btn-primary rounded-end-pill px-3">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <ul class="nav nav-pills bg-light p-1 rounded-pill shadow-sm" id="answerTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active rounded-pill fw-bold px-4 transition-all" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab">
+                                    Tất cả bình luận
+                                    @if (Model != null && Model.Any()) {
+                                        <span class="badge bg-primary rounded-pill ms-1">@Model.Count()</span>
+                                    }
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="card-body p-0 border-top">

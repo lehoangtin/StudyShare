@@ -108,7 +108,7 @@ public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
             if (user == null) return false;
 
             user.FullName = model.FullName;
-            user.Email = model.Email;
+            // user.Email = model.Email; // Không được cập nhật Email ở đây vì form Edit Profile không truyền Email lên
 
             // Xử lý upload ảnh đại diện
             if (avatarFile != null && avatarFile.Length > 0)

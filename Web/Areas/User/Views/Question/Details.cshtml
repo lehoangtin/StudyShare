@@ -17,9 +17,12 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div class="d-flex align-items-center">
-                            <div class="bg-primary-subtle text-primary rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 50px; height: 50px;">
-                                <i class="bi bi-person-fill fs-3"></i>
-                            </div>
+                            @{
+                                string authorAvatarUrl = string.IsNullOrEmpty(Model.AuthorAvatar) 
+                                    ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(Model.AuthorName)}&background=random&color=fff&bold=true" 
+                                    : Model.AuthorAvatar;
+                            }
+                            <img src="@authorAvatarUrl" class="rounded-circle me-3 shadow-sm border border-2 border-primary" style="width: 50px; height: 50px; object-fit: cover;" alt="Avatar" />
                             <div>
                                 <h6 class="fw-bold mb-0 text-dark">@Model.AuthorName</h6>
                                 <small class="text-muted"><i class="bi bi-clock me-1"></i>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
@@ -56,9 +59,18 @@
                             <div class="card border-0 shadow-sm rounded-4 bg-light">
                                 <div class="card-body p-4">
                                     <div class="d-flex justify-content-between mb-2">
-                                        <div>
-                                            <strong class="text-primary me-2">@(answer.AuthorName ?? "Ẩn danh")</strong>
-                                            <small class="text-muted">@answer.CreatedAt.ToString("HH:mm dd/MM/yyyy")</small>
+                                        <div class="d-flex align-items-center">
+                                            @{
+                                                string ansName = answer.AuthorName ?? "Ẩn danh";
+                                                string ansAvatarUrl = string.IsNullOrEmpty(answer.AuthorAvatar) 
+                                                    ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(ansName)}&background=random&color=fff&bold=true" 
+                                                    : answer.AuthorAvatar;
+                                            }
+                                            <img src="@ansAvatarUrl" class="rounded-circle me-2 shadow-sm" width="40" height="40" alt="Avatar" style="object-fit: cover;">
+                                            <div>
+                                                <strong class="text-primary me-2 d-block mb-1" style="line-height: 1;">@ansName</strong>
+                                                <small class="text-muted" style="font-size: 0.8rem;">@answer.CreatedAt.ToString("HH:mm dd/MM/yyyy")</small>
+                                            </div>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2">

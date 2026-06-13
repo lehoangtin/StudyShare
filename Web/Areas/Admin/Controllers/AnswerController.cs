@@ -18,9 +18,10 @@ namespace StudyShare.Areas.Admin.Controllers
         }
 
         // 1. Hiển thị danh sách tất cả bình luận
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search)
         {
-            var answers = await _answerService.GetAllForAdminAsync();
+            var answers = await _answerService.GetAllForAdminAsync(search);
+            ViewData["CurrentSearch"] = search;
             return View(answers);
         }
 

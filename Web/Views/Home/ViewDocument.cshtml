@@ -18,25 +18,29 @@
                 <div class="card-body">
                     <h3 class="fw-bold text-primary">@Model.Title</h3>
                     <hr />
-                    <p><strong>Mô tả:</strong> @Model.Description</p>
-                    <p><strong>Người đăng:</strong> @Model.AuthorName</p>
-                    <p><strong>Ngày đăng:</strong> @Model.UploadDate.ToString("dd/MM/yyyy")</p>
-                    <p><strong>Lượt xem:</strong> <span class="badge bg-secondary">@Model.Views</span></p>
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-card-text text-primary me-1"></i> Mô tả tài liệu:</h6>
+                        <div class="text-secondary" style="font-size: 0.95rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">@(string.IsNullOrWhiteSpace(Model.Description) ? "Không có mô tả chi tiết." : Model.Description)</div>
+                    </div>
+                    
+                    <p class="mb-2"><i class="bi bi-person-circle me-2"></i><strong>Người đăng:</strong> @Model.AuthorName</p>
+                    <p class="mb-2"><i class="bi bi-calendar3 me-2"></i><strong>Ngày đăng:</strong> @Model.UploadDate.ToString("dd/MM/yyyy")</p>
+                    <p class="mb-2"><i class="bi bi-eye me-2"></i><strong>Lượt xem:</strong> <span class="badge bg-secondary">@Model.Views</span></p>
                     
                     <div class="d-grid gap-2 mt-4">
-                        @* 🔥 TẢI XUỐNG - GỌI ACTION TRỪ ĐIỂM *@
+                        @* TẢI XUỐNG - GỌI ACTION TRỪ ĐIỂM *@
                         <a asp-area="User" asp-controller="Document" asp-action="Download" asp-route-id="@Model.Id" 
                            class="btn btn-success" onclick="return confirm('Bạn sẽ bị trừ 10 điểm để tải. Tiếp tục?')">
                             <i class="bi bi-download me-1"></i> Tải xuống (10đ)
                         </a>
 
-                        @* 🔥 NÚT LƯU / BỎ LƯU TÀI LIỆU (Dùng chung hàm ToggleSave) *@
-                        @* 🔥 NÚT LƯU / BỎ LƯU TÀI LIỆU *@
+                        @* NÚT LƯU / BỎ LƯU TÀI LIỆU (Dùng chung hàm ToggleSave) *@
+                        @* NÚT LƯU / BỎ LƯU TÀI LIỆU *@
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
                             @if (ViewBag.IsSaved == true)
                             {
-                                <form asp-area="User" asp-controller="User" asp-action="UnsaveDocument" method="post">
+                                <form asp-area="User" asp-controller="Document" asp-action="UnsaveDocument" method="post">
                                     <input type="hidden" name="docId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-outline-danger w-100 fw-bold">
                                         <i class="bi bi-bookmark-x-fill me-1"></i> Bỏ lưu tài liệu
@@ -45,7 +49,7 @@
                             }
                             else
                             {
-                                <form asp-area="User" asp-controller="User" asp-action="SaveDocument" method="post">
+                                <form asp-area="User" asp-controller="Document" asp-action="SaveDocument" method="post">
                                     <input type="hidden" name="docId" value="@Model.Id" />
                                     <button type="submit" class="btn btn-primary w-100 fw-bold">
                                         <i class="bi bi-bookmark-plus me-1"></i> Lưu tài liệu
@@ -58,7 +62,7 @@
                         @* 🔥 XOÁ TÀI LIỆU (CỦA CHỦ SỞ HỮU) *@
                         @if (User?.Identity?.IsAuthenticated == true && Model.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier))
                         {
-                            <form asp-area="User" asp-controller="User" asp-action="DeleteDocument" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Xóa vĩnh viễn tài liệu này?')">
+                            <form asp-area="User" asp-controller="Document" asp-action="DeleteDocument" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Xóa vĩnh viễn tài liệu này?')">
                                 <button type="submit" class="btn btn-danger w-100 mt-2">
                                     <i class="bi bi-trash me-1"></i> Xóa tài liệu của tôi
                                 </button>

@@ -10,6 +10,7 @@ namespace StudyShare.DTOs.Responses
         // Những dữ liệu lấy từ bảng khác sang
         public string AuthorName { get; set; } = string.Empty; 
         public string AuthorEmail { get; set; } = string.Empty; // THÊM DÒNG NÀY
+        public string? AuthorAvatar { get; set; }
         public int AnswerCount { get; set; } 
         public string UserId { get; set; } = string.Empty;
         public IEnumerable<AnswerResponse> Answers { get; set; } = new List<AnswerResponse>();

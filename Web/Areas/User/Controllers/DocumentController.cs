@@ -173,7 +173,8 @@ public async Task<IActionResult> Download(int id)
             return RedirectToAction("Details", new { id = id });
         }
 
-        await _userService.PenalizeUserAsync(currentUserId, downloadCost, 0);
+        // Trừ điểm người dùng (Dùng AddPointsAsync với số âm để tránh nhầm lẫn với việc phạt vi phạm)
+        await _userService.AddPointsAsync(currentUserId, -downloadCost);
     }
 
     await _documentService.IncreaseDownloadCountAsync(id);

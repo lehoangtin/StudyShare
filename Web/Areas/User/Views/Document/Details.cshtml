@@ -121,12 +121,12 @@
                 <div class="modal-body p-0 bg-secondary" style="height: 80vh;">
                     @if (Model.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                     {
-                        <iframe src="~/@Model.FilePath" style="width: 100%; height: 100%; border: none;"></iframe>
+                        <iframe src="@Model.FilePath#toolbar=0" style="width: 100%; height: 100%; border: none;"></iframe>
                     }
                     else
                     {
                         <div class="d-flex justify-content-center align-items-center h-100 p-3">
-                            <img src="~/@Model.FilePath" class="img-fluid shadow-lg rounded-3" style="max-height: 75vh; object-fit: contain;" alt="Preview" />
+                            <img src="@Model.FilePath" class="img-fluid shadow-lg rounded-3" style="max-height: 75vh; object-fit: contain;" alt="Preview" />
                         </div>
                     }
                 </div>

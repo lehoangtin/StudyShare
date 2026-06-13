@@ -14,11 +14,15 @@ namespace StudyShare.Mappings
         {
             // 1. APP USER MAPPINGS
             CreateMap<AppUser, UserResponse>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Avatar))
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
                 .ForMember(dest => dest.WarningCount, opt => opt.MapFrom(src => src.WarningCount))
                 .ForMember(dest => dest.IsBanned, opt => opt.MapFrom(src => src.IsBanned));
 
             CreateMap<AppUser, UserViewModel>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Avatar))
                 .ForMember(dest => dest.DocumentCount, opt => opt.MapFrom(src => src.Documents != null ? src.Documents.Count : 0))
                 .ForMember(dest => dest.QuestionCount, opt => opt.MapFrom(src => src.Questions != null ? src.Questions.Count : 0))
                 .ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
@@ -56,24 +60,28 @@ namespace StudyShare.Mappings
             CreateMap<Question, QuestionResponse>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0))
-                .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")); // THÊM DÒNG NÀY             
+                .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")) // THÊM DÒNG NÀY             
+                .ForMember(dest => dest.AuthorAvatar, opt => opt.MapFrom(src => src.User != null ? src.User.Avatar : null));
             CreateMap<QuestionResponse, QuestionViewModel>();
 
             CreateMap<Question, QuestionViewModel>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
                 .ForMember(dest => dest.AnswerCount, opt => opt.MapFrom(src => src.Answers != null ? src.Answers.Count : 0))
-                .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")); // THÊM DÒNG NÀY            // 4. ANSWER MAPPINGS
+                .ForMember(dest => dest.AuthorEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : "")) // THÊM DÒNG NÀY            // 4. ANSWER MAPPINGS
+                .ForMember(dest => dest.AuthorAvatar, opt => opt.MapFrom(src => src.User != null ? src.User.Avatar : null));
             CreateMap<AnswerCreateRequest, Answer>();
             CreateMap<AnswerCreateViewModel, AnswerCreateRequest>();
             CreateMap<AnswerCreateViewModel, AnswerCreateRequest>();
             CreateMap<AnswerEditViewModel, AnswerUpdateRequest>();
             CreateMap<Answer, AnswerResponse>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.AuthorAvatar, opt => opt.MapFrom(src => src.User != null ? src.User.Avatar : null));
             
             CreateMap<AnswerResponse, AnswerViewModel>();
 
             CreateMap<Answer, AnswerViewModel>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"));
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : "Ẩn danh"))
+                .ForMember(dest => dest.AuthorAvatar, opt => opt.MapFrom(src => src.User != null ? src.User.Avatar : null));
 
             // 5. CATEGORY MAPPINGS
             // CREATE

@@ -150,6 +150,11 @@
                                             <td class="ps-4 py-3 small text-muted fw-medium">@v.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                                             <td class="py-3">
                                                 <div class="fw-bold text-dark text-truncate" style="max-width: 400px;" title="@v.Reason">@v.Reason</div>
+                                                @if (!string.IsNullOrEmpty(v.TargetContentSnapshot)) {
+                                                    <div class="small text-muted text-truncate mt-1" style="max-width: 400px; font-style: italic;" title="@v.TargetContentSnapshot">
+                                                        "@(v.TargetContentSnapshot.Length > 100 ? v.TargetContentSnapshot.Substring(0, 100) + "..." : v.TargetContentSnapshot)"
+                                                    </div>
+                                                }
                                             </td>
                                             <td class="py-3">
                                                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">

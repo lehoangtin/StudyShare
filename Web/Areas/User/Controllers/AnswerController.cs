@@ -109,6 +109,9 @@ namespace StudyShare.Areas.User.Controllers
         {
             // Lấy ID của người dùng hiện tại đang đăng nhập
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
             
             var myAnswers = await _answerService.GetByUserIdAsync(userId);
             

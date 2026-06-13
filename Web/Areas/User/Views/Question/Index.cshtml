@@ -59,7 +59,12 @@
                                     <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm me-2">
-                                                <img src="/images/default-avatar.png" class="rounded-circle" width="30" height="30" alt="Avatar">
+                                                @{
+                                                    string avatarUrl = string.IsNullOrEmpty(item.AuthorAvatar) 
+                                                        ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(item.AuthorName)}&background=random&color=fff&bold=true" 
+                                                        : item.AuthorAvatar;
+                                                }
+                                                <img src="@avatarUrl" class="rounded-circle" width="30" height="30" alt="Avatar" style="object-fit: cover;">
                                             </div>
                                             <span class="small fw-medium">@item.AuthorName</span>
                                         </div>

@@ -36,7 +36,7 @@ namespace StudyShare.Areas.User.Controllers
         public async Task<IActionResult> SendMessage([FromBody] UserMessage msg)
         {
             // 1. Kiểm tra xem người dùng đã đăng nhập chưa
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated != true)
             {
                 return Json(new { reply = "Bạn cần đăng nhập để thảo luận với trợ lý AI nhé!" });
             }

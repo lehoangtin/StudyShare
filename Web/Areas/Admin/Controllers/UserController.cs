@@ -12,7 +12,7 @@ using System.Security.Claims;
 namespace StudyShare.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin, SuperAdmin")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     
     public class UserController : Controller
     {

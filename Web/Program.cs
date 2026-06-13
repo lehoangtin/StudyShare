@@ -15,12 +15,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// 🔑 Persist Data Protection keys vào disk để không bị mất khi Docker restart
+// Persist Data Protection keys vào disk để không bị mất khi Docker restart
+var keysFolder = Path.Combine(builder.Environment.ContentRootPath, "dataprotection-keys");
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo("/app/dataprotection-keys"))
+    .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
     .SetApplicationName("StudyShare");
 
-// 🔥 AI Service (giữ từ nhánh minh)
+// AI Service (giữ từ nhánh minh)
 // builder.Services.AddHttpClient<ai.Services.AIService>();
 builder.Services.AddHttpClient<IAIService, AIService>();
 // Database
@@ -127,7 +128,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// 🔀 Cho phép đọc đúng Host/Scheme khi chạy sau Docker
+// Cho phép đọc đúng Host/Scheme khi chạy sau Docker
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto

@@ -46,14 +46,24 @@ namespace StudyShare.Repositories.Implementations
             _context.Answers.Remove(answer);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<IEnumerable<Answer>> GetAllAsync()
+        public async Task<IEnumerable<Answer>> GetAllAsync(string? search = null)
         {
-            // Cập nhật: Include thêm User và Question để Admin dễ quản lý
-            return await _context.Answers
+            var query = _context.Answers
                 .Include(a => a.User)
                 .Include(a => a.Question)
-                .OrderByDescending(a => a.CreatedAt)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowerSearch = search.ToLower();
+                query = query.Where(a => 
+                    (a.Content != null && a.Content.ToLower().Contains(lowerSearch)) ||
+                    (a.User != null && a.User.FullName != null && a.User.FullName.ToLower().Contains(lowerSearch)) ||
+                    (a.User != null && a.User.UserName != null && a.User.UserName.ToLower().Contains(lowerSearch))
+                );
+            }
+
+            return await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
         }
         public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(int questionId)
         {

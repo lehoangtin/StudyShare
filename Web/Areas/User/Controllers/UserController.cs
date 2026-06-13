@@ -159,6 +159,10 @@ namespace StudyShare.Areas.User.Controllers
         public async Task<IActionResult> MyViolations()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            ViewBag.CurrentUser = await _userManager.FindByIdAsync(userId);
+
             var reportsDto = await _reportService.GetReportsForUserAsync(userId);
             var viewModel = _mapper.Map<IEnumerable<ReportViewModel>>(reportsDto);
             

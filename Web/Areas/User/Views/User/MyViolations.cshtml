@@ -31,14 +31,25 @@
                                             <td class="ps-4 py-3 fw-medium">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                                             <td>
                                                 <div class="fw-bold text-dark">@item.Reason</div>
+                                                @if (!string.IsNullOrEmpty(item.TargetContentSnapshot)) {
+                                                    <div class="small text-muted mt-1" style="font-style: italic;">
+                                                        "@(item.TargetContentSnapshot.Length > 100 ? item.TargetContentSnapshot.Substring(0, 100) + "..." : item.TargetContentSnapshot)"
+                                                    </div>
+                                                }
                                                 @if (item.DocumentId != null) {
-                                                    <small class="text-primary">Liên quan đến tài liệu ID: @item.DocumentId</small>
+                                                    <small class="text-primary mt-1 d-block">Liên quan đến tài liệu ID: @item.DocumentId</small>
                                                 }
                                             </td>
                                             <td>
-                                                <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle rounded-pill">
-                                                    @item.ActionTaken
-                                                </span>
+                                                @if (!string.IsNullOrEmpty(item.ActionTaken)) {
+                                                    <span class="badge bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle rounded-pill">
+                                                        @item.ActionTaken
+                                                    </span>
+                                                } else {
+                                                    <span class="badge bg-secondary-subtle text-secondary px-3 py-2 border border-secondary-subtle rounded-pill">
+                                                        Đang chờ xem xét
+                                                    </span>
+                                                }
                                             </td>
                                         </tr>
                                     }
